@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "836673073571",
+    "firebase_url": "https://senior-project-354f6.firebaseio.com",
+    "project_id": "senior-project-354f6",
+    "storage_bucket": "senior-project-354f6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836673073571:android:98b174e478ca32f9",
+        "android_client_info": {
+          "package_name": "qa.edu.qu.cmps312.safedrivingapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "836673073571-j430obpae3a8k58iduqo2qo5df07qjao.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "qa.edu.qu.cmps312.safedrivingapplication",
+            "certificate_hash": "85369d93444e4b299f8596fd5d7255c72ff346da"
+          }
+        },
+        {
+          "client_id": "836673073571-kvikjvj535vaqs2nop237uqtli24ei64.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgd0CYhENN4PS1ri3YlN5bHm-aM50LA9I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "836673073571-kvikjvj535vaqs2nop237uqtli24ei64.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
