@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
 
     //Done with this -  Login Button Logic type user: soly - pass: 1234
+    //Test
     @Override
     public void login(String user, String pass) {
         if (isEmpty(user) && isEmpty(pass)) {
