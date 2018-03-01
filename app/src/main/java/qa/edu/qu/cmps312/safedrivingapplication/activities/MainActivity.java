@@ -13,9 +13,11 @@ import com.google.firebase.database.ValueEventListener;
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.LoginFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
+import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin, MainScreenFragment.MainScreenInterface {
+public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
+        MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface {
 
     LoginFragment loginFragment;
     DatabaseReference mDatabase;
@@ -54,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     //Test
     @Override
     public void login(String user, String pass) {
-        if (isEmpty(user) && isEmpty(pass)) {
+        if (isNotEmpty(user) && isNotEmpty(pass)) {
             final Boolean[] flag = {false};
             final String mUsername = user;
             final String mPassword = pass;
@@ -98,9 +100,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     }
 
-    //TODO: Register Button Logic i will do this tomorrow
     @Override
     public void register() {
+        RegisterFragment registerFragment = new RegisterFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, registerFragment)
+                .commit();
 
     }
 
@@ -117,7 +122,33 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         Toast.makeText(this, "I need to open addCar fragment", Toast.LENGTH_SHORT).show();
     }
 
-    public boolean isEmpty(String s) {
+
+    @Override
+    public void submit(String fname, String lname, String dateOfBirth, String username, String password) {
+        Driver newUser = new Driver(fname, lname, dateOfBirth, username, password);
+        String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
+        mDatabase.child("Drivers").child(key).setValue(newUser);
+
+        LoginFragment loginFragment = new LoginFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, loginFragment)
+                .commit();
+
+        Toast.makeText(this, "User Created ! Login now.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void cancel() {
+        Toast.makeText(this, "You canceled registration! ", Toast.LENGTH_SHORT).show();
+        LoginFragment loginFragment = new LoginFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, loginFragment)
+                .commit();
+
+    }
+
+
+    public boolean isNotEmpty(String s) {
         if (s.trim().length() > 0)
             return true;
         else

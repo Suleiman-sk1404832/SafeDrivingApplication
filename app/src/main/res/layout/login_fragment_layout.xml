@@ -80,7 +80,6 @@
         android:layout_marginBottom="99dp"
         android:layout_marginEnd="14dp"
         android:layout_marginStart="56dp"
-        android:onClick="User_Register"
         android:text="Register"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/loginButton"

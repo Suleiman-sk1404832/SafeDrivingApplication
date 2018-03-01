@@ -41,6 +41,13 @@ public class LoginFragment extends Fragment {
             }
         });
 
+        register.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                successfulLogin.register();
+            }
+        });
+
         return rootView;
     }
 
