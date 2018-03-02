@@ -1,7 +1,14 @@
 package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -13,6 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.LoginFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
+import qa.edu.qu.cmps312.safedrivingapplication.fragments.GMapFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
 
@@ -21,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     LoginFragment loginFragment;
     DatabaseReference mDatabase;
+    private final static int PERMISSIONS_REQUEST_CODE = 22;
 
 
     @Override
@@ -109,11 +118,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     }
 
-
-    //TODO: Skromy work: here you need to open your fragment and then work on it
     @Override
     public void openMaps() {
-        Toast.makeText(this, "I need to open the maps fragment", Toast.LENGTH_SHORT).show();
+        if (!requestRuntimePermissions()) {
+            GMapFragment mapFragment = new GMapFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_Activity_frame_layout, mapFragment)
+                    .commit();
+        }
+
+        //Toast.makeText(this, "I need to open the maps fragment", Toast.LENGTH_SHORT).show();
     }
 
     //TODO: Mohamad work: here you need to open your fragment and then work on it
@@ -154,4 +168,37 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         else
             return false;
     }
+
+    @Override
+    protected void onDestroy() {
+        //Log.i("SHOW", "OnDestroy() was called");
+        //TODO: handle the problem of fragments when rotating the view.
+        super.onDestroy();
+    }
+
+    private boolean requestRuntimePermissions() {
+        if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSIONS_REQUEST_CODE);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == PERMISSIONS_REQUEST_CODE &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                grantResults[1] == PackageManager.PERMISSION_GRANTED)
+            openMaps();
+        else
+            requestRuntimePermissions();
+    }
+
 }
