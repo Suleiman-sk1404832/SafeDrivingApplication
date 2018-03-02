@@ -1,5 +1,7 @@
 package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
@@ -10,17 +12,27 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
+import qa.edu.qu.cmps312.safedrivingapplication.fragments.AddCarFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.LoginFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
+import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
-        MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface {
+        MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
+        AddCarFragment.AddCarInterface {
+
+
+    static final int REGISTER_CAR_REQUEST_CODE = 301;
 
     LoginFragment loginFragment;
+    ArrayList<Car> tempList;
     DatabaseReference mDatabase;
+    SharedPreferences sharedPreferences;
 
 
     @Override
@@ -29,6 +41,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         setContentView(R.layout.activity_main);
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+
+        tempList = new ArrayList<>();
 
 
         //TODO: Don't add these two again they are already in the firebase i will make the register do the work of adding tomorrow
@@ -74,6 +89,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
                             Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                            SharedPreferences.Editor e = sharedPreferences.edit();
+                            e.putString("fname", ds.getValue(Driver.class).getFirstName());
+                            e.putString("lname", ds.getValue(Driver.class).getLastName());
+                            e.putString("username", ds.getValue(Driver.class).getUserName());
+                            e.commit();
                             flag[0] = true;
                         }
                     }
@@ -116,10 +136,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         Toast.makeText(this, "I need to open the maps fragment", Toast.LENGTH_SHORT).show();
     }
 
-    //TODO: Mohamad work: here you need to open your fragment and then work on it
     @Override
     public void openAddCars() {
-        Toast.makeText(this, "I need to open addCar fragment", Toast.LENGTH_SHORT).show();
+        AddCarFragment addCarFragment = new AddCarFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, addCarFragment)
+                .commit();
     }
 
 
@@ -145,6 +167,47 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 .replace(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
 
+    }
+
+
+    @Override
+    public String getUserName() {
+        return sharedPreferences.getString("username", "");
+    }
+
+    @Override
+    public void addUserCar(ArrayList<Car> list) {
+        Intent intent = new Intent(this, RegisterCarActivity.class);
+        tempList = list;
+        startActivityForResult(intent, REGISTER_CAR_REQUEST_CODE);
+
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REGISTER_CAR_REQUEST_CODE: {
+                if (resultCode == RESULT_OK) {
+                    Car nCar = new Car(data.getStringExtra("make"), data.getStringExtra("model"),
+                            data.getStringExtra("year"), data.getIntExtra("milage", 0));
+                    tempList.add(nCar);
+                    AddCarFragment fragment = AddCarFragment.newInstance(tempList);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, fragment)
+                            .commit();
+
+
+                }
+                if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(this, "You canceled car adding", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+        }
     }
 
 
