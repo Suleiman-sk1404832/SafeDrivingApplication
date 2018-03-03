@@ -1,7 +1,14 @@
 package qa.edu.qu.cmps312.safedrivingapplication.fragments;
 
 
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -18,6 +25,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
+import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
+
+import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by Mohamad Alsokromy on 3/1/2018.
@@ -34,7 +44,8 @@ public class GMapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
        View rootView = inflater.inflate(R.layout.map_fragment_layout, container, false);
 
-       // TODO: start the GPS service or implement it here
+       // TODO: start the GPS service here
+
 
        if (mapFragment == null){
            mapFragment = SupportMapFragment.newInstance();

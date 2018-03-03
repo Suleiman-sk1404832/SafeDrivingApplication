@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Safe Driving Application</string>
+    <string name="stop_drive">Stop Drive</string>
+    <string name="stop">Stop</string>
 </resources>

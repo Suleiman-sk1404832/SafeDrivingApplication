@@ -1,6 +1,7 @@
 package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.GMapFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
+import qa.edu.qu.cmps312.safedrivingapplication.services.GPSService;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface {
@@ -30,12 +32,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     LoginFragment loginFragment;
     DatabaseReference mDatabase;
     private final static int PERMISSIONS_REQUEST_CODE = 22;
+    private Intent mServiceIntent;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mServiceIntent = new Intent(this, GPSService.class);
+
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
@@ -121,6 +127,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     @Override
     public void openMaps() {
         if (!requestRuntimePermissions()) {
+
+
+
             GMapFragment mapFragment = new GMapFragment();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.main_Activity_frame_layout, mapFragment)
