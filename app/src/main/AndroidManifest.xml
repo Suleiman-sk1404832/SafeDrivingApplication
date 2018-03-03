@@ -31,6 +31,8 @@
 
         </activity>
         <activity android:name=".activities.RegisterCarActivity"></activity>
+        <service android:name=".services.GPSService" android:exported="false"
+            android:description="@string/service_description"/>
     </application>
 
 </manifest>

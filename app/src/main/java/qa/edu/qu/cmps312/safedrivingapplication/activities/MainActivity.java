@@ -28,10 +28,11 @@ import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
+import qa.edu.qu.cmps312.safedrivingapplication.services.GPSService;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
-        AddCarFragment.AddCarInterface {
+        AddCarFragment.AddCarInterface, GMapFragment.mapInterface {
 
 
     static final int REGISTER_CAR_REQUEST_CODE = 301;
@@ -144,24 +145,23 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
 
-    //TODO: Skromy work: here you need to open your fragment and then work on it
     @Override
     public void openMaps() {
         if (!requestRuntimePermissions()) {
 
-
+            startService(new Intent(this, GPSService.class));
 
             GMapFragment mapFragment = new GMapFragment();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.main_Activity_frame_layout, mapFragment)
                     .commit();
         }
-
     }
 
-
-
-
+    @Override
+    public void stopGPSService() {
+        //TODO: implement stopping GPS Tracking and going back to MainScreenFragment
+    }
 
     private boolean requestRuntimePermissions() {
         if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this,

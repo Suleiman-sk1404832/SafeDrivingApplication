@@ -44,9 +44,6 @@ public class GMapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
        View rootView = inflater.inflate(R.layout.map_fragment_layout, container, false);
 
-       // TODO: start the GPS service here
-
-
        if (mapFragment == null){
            mapFragment = SupportMapFragment.newInstance();
            mapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -64,6 +61,10 @@ public class GMapFragment extends Fragment {
         getFragmentManager().beginTransaction().replace(R.id.map, mapFragment).commit();
 
         return rootView;
+    }
+
+    public interface mapInterface{
+        void stopGPSService();
     }
 
 }
