@@ -125,6 +125,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
         } else
             Toast.makeText(this, "Fill the fields", Toast.LENGTH_SHORT).show();
+        //TODO: For testing purpose - To be removed later.x
+        MainScreenFragment mainScreenFragment = new MainScreenFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                .commit();
+
 
     }
 
@@ -151,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                     .commit();
         }
 
-        //Toast.makeText(this, "I need to open the maps fragment", Toast.LENGTH_SHORT).show();
     }
 
 
