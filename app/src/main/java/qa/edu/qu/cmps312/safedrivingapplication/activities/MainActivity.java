@@ -32,7 +32,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.services.GPSService;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
-        AddCarFragment.AddCarInterface, GMapFragment.mapInterface {
+        AddCarFragment.AddCarInterface, GMapFragment.MapInterface {
 
 
     static final int REGISTER_CAR_REQUEST_CODE = 301;
@@ -160,7 +160,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     @Override
     public void stopGPSService() {
-        //TODO: implement stopping GPS Tracking and going back to MainScreenFragment
+
+        //stop service
+        stopService(new Intent(this, GPSService.class));
+
+        //go back to mainScreenFragment
+        MainScreenFragment mainScreenFragment = new MainScreenFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                .commit();
+
     }
 
     private boolean requestRuntimePermissions() {

@@ -15,6 +15,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,12 +29,12 @@ import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 
 public class GPSService extends Service {
 
-    LocationManager mLManager;
-    LocationListener mLListener;
-    float totSpeed = 0;
+    LocationManager mLocationManager;
+    LocationListener mLocationListener;
+    float mTotSpeed = 0;
     float mTotTime = 0;
-    NotificationManager mNM;
-    Notification mNotify;
+    NotificationManager mNotificationManager;
+    Notification mNotification;
     final static int NOTIFICATION_ID = 23;
     public static final int ONE_SEC = 1000;
     public static final int ONE_MIN = 60*ONE_SEC;
@@ -66,7 +67,7 @@ public class GPSService extends Service {
         registerReceiver(mScreenOffStateReceiver, new IntentFilter("android.intent.action.SCREEN_OFF"));
         registerReceiver(mScreenOnStateReceiver, new IntentFilter("android.intent.action.SCREEN_ON"));
 
-        mLListener = new LocationListener() {
+        mLocationListener = new LocationListener() {
             long startTime = 0;
             long endTime = 0;
             boolean isFirstTimeAboveLimit = true;
@@ -74,7 +75,8 @@ public class GPSService extends Service {
 
             @Override
             public void onLocationChanged(Location location) {
-                float speed=120; //Simulation Code, adds 40KM/h*10
+                //TODO: Calculate the total time and average speed differently as the update interval is not constant.
+                float speed=120; //Simulation Code, adds around 40KM/h*10
 
                 /*float speed = location.getSpeed();
 
@@ -83,7 +85,7 @@ public class GPSService extends Service {
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
-                    totSpeed += speed;
+                    mTotSpeed += speed;
                 }
 
                 else if (speed > (SPEED_LIMIT/KM_HOURS) && !mScreenOn){ // if higher than speed limit but screen is off
@@ -109,8 +111,10 @@ public class GPSService extends Service {
                 }
                 counter++;
                 */
-                totSpeed += speed; //Simulation Code
+                mTotSpeed += speed; //Simulation Code
                 mTotTime+=10000; //Simulation Code, add 10 seconds.
+                Log.i("Results", "Latest Dangerous Driving Time in Milliseconds: "
+                        +mTotTime+'\n'+"Total Speed in M/S: "+mTotSpeed);
             }
 
             @Override
@@ -126,19 +130,19 @@ public class GPSService extends Service {
             }
         };
 
-        mLManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //noinspection MissingPermission
-        mLManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, ONE_SEC, 0, mLListener);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, ONE_SEC, 0, mLocationListener);
 
         final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        mNotify = new Notification.Builder(getApplicationContext())
+        mNotification = new Notification.Builder(getApplicationContext())
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setOngoing(true)
                 .setContentTitle("Safe Driving is ON")
                 .setContentText("Click to access Safe Driving App")
                 .setContentIntent(pendingIntent).build();
-        startForeground(NOTIFICATION_ID, mNotify);
+        startForeground(NOTIFICATION_ID, mNotification);
 
     }
 
@@ -154,23 +158,25 @@ public class GPSService extends Service {
     public float getAverageSpeed() {
         if(mTotTime == 0) // to avoid exception
             return 0;
-        return ((totSpeed*KM_HOURS)/(mTotTime/ONE_SEC));
+        return ((mTotSpeed *KM_HOURS)/(mTotTime/ONE_SEC));
     }
 
     @Override
     public void onDestroy() {
         //noinspection MissingPermission
-        mLManager.removeUpdates(mLListener);
-        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNM.cancel(NOTIFICATION_ID);
+        mLocationManager.removeUpdates(mLocationListener);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(NOTIFICATION_ID);
         unregisterReceiver(mScreenOffStateReceiver);
         unregisterReceiver(mScreenOnStateReceiver);
 
         float newTotalTime = getTotalTimeInMinutes();
         float newAverageSpeed = getAverageSpeed();
         if (newTotalTime != 0) {
-            //TODO: Save mLocations array list and both average speed and total time.
+            //TODO: Save mLocations array list and both average speed and total time to FireBase.
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
+            Log.i("Results", "Total Dangerous Driving Time in minutes: "
+                    +newTotalTime+'\n'+"Average Speed in KM/H: "+newAverageSpeed);
         }
     }
 
