@@ -1,15 +1,9 @@
 package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -18,21 +12,27 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
+import qa.edu.qu.cmps312.safedrivingapplication.fragments.AddCarFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.LoginFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
-import qa.edu.qu.cmps312.safedrivingapplication.fragments.GMapFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
+import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
-import qa.edu.qu.cmps312.safedrivingapplication.services.GPSService;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
-        MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface {
+        MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
+        AddCarFragment.AddCarInterface {
+
+
+    static final int REGISTER_CAR_REQUEST_CODE = 301;
 
     LoginFragment loginFragment;
+    ArrayList<Car> tempList;
     DatabaseReference mDatabase;
-    private final static int PERMISSIONS_REQUEST_CODE = 22;
-    private Intent mServiceIntent;
+    SharedPreferences sharedPreferences;
 
 
     @Override
@@ -40,10 +40,10 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mServiceIntent = new Intent(this, GPSService.class);
-
-
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+
+        tempList = new ArrayList<>();
 
 
         //TODO: Don't add these two again they are already in the firebase i will make the register do the work of adding tomorrow
@@ -89,6 +89,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
                             Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                            SharedPreferences.Editor e = sharedPreferences.edit();
+                            e.putString("fname", ds.getValue(Driver.class).getFirstName());
+                            e.putString("lname", ds.getValue(Driver.class).getLastName());
+                            e.putString("username", ds.getValue(Driver.class).getUserName());
+                            e.commit();
                             flag[0] = true;
                         }
                     }
@@ -124,25 +129,19 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     }
 
+
+    //TODO: Skromy work: here you need to open your fragment and then work on it
     @Override
     public void openMaps() {
-        if (!requestRuntimePermissions()) {
-
-
-
-            GMapFragment mapFragment = new GMapFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.main_Activity_frame_layout, mapFragment)
-                    .commit();
-        }
-
-        //Toast.makeText(this, "I need to open the maps fragment", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "I need to open the maps fragment", Toast.LENGTH_SHORT).show();
     }
 
-    //TODO: Mohamad work: here you need to open your fragment and then work on it
     @Override
     public void openAddCars() {
-        Toast.makeText(this, "I need to open addCar fragment", Toast.LENGTH_SHORT).show();
+        AddCarFragment addCarFragment = new AddCarFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, addCarFragment)
+                .commit();
     }
 
 
@@ -171,43 +170,51 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
 
+    @Override
+    public String getUserName() {
+        return sharedPreferences.getString("username", "");
+    }
+
+    @Override
+    public void addUserCar(ArrayList<Car> list) {
+        Intent intent = new Intent(this, RegisterCarActivity.class);
+        tempList = list;
+        startActivityForResult(intent, REGISTER_CAR_REQUEST_CODE);
+
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REGISTER_CAR_REQUEST_CODE: {
+                if (resultCode == RESULT_OK) {
+                    Car nCar = new Car(data.getStringExtra("make"), data.getStringExtra("model"),
+                            data.getStringExtra("year"), data.getIntExtra("milage", 0));
+                    tempList.add(nCar);
+                    AddCarFragment fragment = AddCarFragment.newInstance(tempList);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, fragment)
+                            .commit();
+
+
+                }
+                if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(this, "You canceled car adding", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+        }
+    }
+
+
     public boolean isNotEmpty(String s) {
         if (s.trim().length() > 0)
             return true;
         else
             return false;
     }
-
-    @Override
-    protected void onDestroy() {
-        //Log.i("SHOW", "OnDestroy() was called");
-        //TODO: handle the problem of fragments when rotating the view.
-        super.onDestroy();
-    }
-
-    private boolean requestRuntimePermissions() {
-        if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSIONS_REQUEST_CODE);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if(requestCode == PERMISSIONS_REQUEST_CODE &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                grantResults[1] == PackageManager.PERMISSION_GRANTED)
-            openMaps();
-        else
-            requestRuntimePermissions();
-    }
-
 }

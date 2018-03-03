@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="16dp"
+        android:text="Car # :"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/CcarNumberTv"
+        app:layout_constraintEnd_toStartOf="@+id/CcarNumberTv"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/CcarNumberTv"
+        android:layout_width="0dp"
+        android:layout_height="22dp"
+        android:layout_alignBaseline="@+id/textView9"
+        android:layout_alignBottom="@+id/textView9"
+        android:layout_marginBottom="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginTop="16dp"
+        android:layout_toEndOf="@+id/textView9"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/CmakeTv"
+        app:layout_constraintEnd_toStartOf="@+id/textView13"
+        app:layout_constraintStart_toEndOf="@+id/textView9"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="9dp"
+        android:layout_marginStart="16dp"
+        android:text="Make :"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/CmakeTv"
+        app:layout_constraintEnd_toStartOf="@+id/CmakeTv"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/CmakeTv"
+        android:layout_width="112dp"
+        android:layout_height="18dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginTop="53dp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/textView17"
+        app:layout_constraintStart_toEndOf="@+id/textView11"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:text="Model :"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/CmodelTv"
+        app:layout_constraintEnd_toStartOf="@+id/CmodelTv"
+        app:layout_constraintStart_toEndOf="@+id/CcarNumberTv" />
+
+    <TextView
+        android:id="@+id/CmodelTv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="13dp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/CyearTv"
+        app:layout_constraintEnd_toStartOf="@+id/textView15"
+        app:layout_constraintStart_toEndOf="@+id/textView13"
+        app:layout_constraintTop_toTopOf="@+id/textView15" />
+
+    <TextView
+        android:id="@+id/textView15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="9dp"
+        android:text="Year :"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/CyearTv"
+        app:layout_constraintEnd_toStartOf="@+id/CyearTv"
+        app:layout_constraintStart_toEndOf="@+id/CmodelTv" />
+
+    <TextView
+        android:id="@+id/CyearTv"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:layout_marginBottom="17dp"
+        android:layout_marginEnd="31dp"
+        android:layout_marginTop="16dp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/CmileageTv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textView15"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="15dp"
+        android:text="Mileage :"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/CmakeTv"
+        app:layout_constraintEnd_toStartOf="@+id/CmileageTv"
+        app:layout_constraintStart_toEndOf="@+id/CmakeTv" />
+
+    <TextView
+        android:id="@+id/CmileageTv"
+        android:layout_width="0dp"
+        android:layout_height="19dp"
+        android:layout_marginEnd="74dp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/textView17"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textView17" />
+</android.support.constraint.ConstraintLayout>
