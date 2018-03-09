@@ -1,14 +1,12 @@
 package qa.edu.qu.cmps312.safedrivingapplication.models;
 
-import java.util.ArrayList;
-
 public class Driver {
     private String firstName;
     private String lastName;
     private String dateOfBirth;
     private String userName;
     private String password;
-    private ArrayList<Car> userCarsList;
+    private Car userCar;
 
     public Driver() {
     }
@@ -19,7 +17,6 @@ public class Driver {
         this.dateOfBirth = dateOfBirth;
         this.userName = userName;
         this.password = password;
-        this.userCarsList = new ArrayList<Car>();
     }
 
     public String getFirstName() {
@@ -62,11 +59,11 @@ public class Driver {
         this.password = password;
     }
 
-    public ArrayList<Car> getUserCarsList() {
-        return userCarsList;
+    public Car getUserCar() {
+        return userCar;
     }
 
-    public void setUserCarsList(ArrayList<Car> userCarsList) {
-        this.userCarsList = userCarsList;
+    public void setUserCar(Car car) {
+        this.userCar = car;
     }
 }

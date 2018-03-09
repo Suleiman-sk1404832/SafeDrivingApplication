@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             e.putString("fname", ds.getValue(Driver.class).getFirstName());
                             e.putString("lname", ds.getValue(Driver.class).getLastName());
                             e.putString("username", ds.getValue(Driver.class).getUserName());
+                            e.putString("key", ds.getKey());
                             e.commit();
                             flag[0] = true;
                         }
@@ -233,47 +234,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
 
-    @Override
-    public String getUserName() {
-        return sharedPreferences.getString("username", "");
-    }
-
-    @Override
-    public void addUserCar(ArrayList<Car> list) {
-        Intent intent = new Intent(this, RegisterCarActivity.class);
-        tempList = list;
-        startActivityForResult(intent, REGISTER_CAR_REQUEST_CODE);
-
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case REGISTER_CAR_REQUEST_CODE: {
-                if (resultCode == RESULT_OK) {
-                    Car nCar = new Car(data.getStringExtra("make"), data.getStringExtra("model"),
-                            data.getStringExtra("year"), data.getIntExtra("milage", 0));
-                    tempList.add(nCar);
-                    AddCarFragment fragment = AddCarFragment.newInstance(tempList);
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_Activity_frame_layout, fragment)
-                            .commit();
-
-
-                }
-                if (resultCode == RESULT_CANCELED) {
-                    Toast.makeText(this, "You canceled car adding", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-
-        }
-    }
-
-
     public boolean isNotEmpty(String s) {
         if (s.trim().length() > 0)
             return true;
@@ -286,5 +246,23 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         //Log.i("SHOW", "OnDestroy() was called");
         //TODO: handle the problem of fragments when rotating the view.
         super.onDestroy();
+    }
+
+    @Override
+    public void cancelAddCar() {
+        MainScreenFragment mainScreenFragment = new MainScreenFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                .commit();
+
+        Toast.makeText(this, "You cancelled adding car", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void submitCar(String make, String model, String year, String milage) {
+        Car newCar = new Car(make, model, year, Integer.parseInt(milage));
+        mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("userCar").setValue(newCar);
+
+
     }
 }

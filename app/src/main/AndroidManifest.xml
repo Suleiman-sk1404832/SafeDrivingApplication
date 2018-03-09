@@ -30,9 +30,10 @@
             </intent-filter>
 
         </activity>
-        <activity android:name=".activities.RegisterCarActivity"></activity>
-        <service android:name=".services.GPSService" android:exported="false"
-            android:description="@string/service_description"/>
+        <service
+            android:name=".services.GPSService"
+            android:description="@string/service_description"
+            android:exported="false" />
     </application>
 
 </manifest>
