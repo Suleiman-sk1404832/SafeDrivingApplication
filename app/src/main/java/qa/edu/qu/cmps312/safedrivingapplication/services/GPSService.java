@@ -18,6 +18,8 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+
 import java.util.ArrayList;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
@@ -31,6 +33,7 @@ public class GPSService extends Service {
 
     LocationManager mLocationManager;
     LocationListener mLocationListener;
+    FusedLocationProviderClient FusedLocationProviderClient;
     float mTotSpeed = 0;
     float mTotTime = 0;
     NotificationManager mNotificationManager;
