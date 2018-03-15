@@ -10,13 +10,24 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -66,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 //        mDatabase.child("Drivers").child(key).setValue(d2);
 
 
+        find_weather();
         loginFragment = new LoginFragment();
 
         getSupportFragmentManager().beginTransaction()
@@ -97,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         compareUser[0] = ds.getValue(Driver.class).getUserName();
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
-                            Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                            //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             SharedPreferences.Editor e = sharedPreferences.edit();
                             e.putString("fname", ds.getValue(Driver.class).getFirstName());
                             e.putString("lname", ds.getValue(Driver.class).getLastName());
@@ -262,6 +274,47 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void submitCar(String make, String model, String year, String milage) {
         Car newCar = new Car(make, model, year, Integer.parseInt(milage));
         mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("userCar").setValue(newCar);
+
+
+    }
+
+    //TODO: For weather Api - i think it works i will check tomorrow at home
+    public void find_weather() {
+        String url = "api.openweathermap.org/data/2.5/weather?q=Doha&appid=67bc52ba2b975486cd69912aba06019c&units=imperial";
+
+        Log.w("helpMePlease", "Reached the function");
+
+        final String[] tempreture = new String[1];
+        final String[] sky_status = new String[1];
+
+        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONObject main_Object = response.getJSONObject("main");
+                    JSONArray weather = response.getJSONArray("weather");
+                    tempreture[0] = String.valueOf(main_Object.getDouble("temp"));
+                    sky_status[0] = String.valueOf(weather.getJSONObject(1));
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+
+        RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+        queue.add(jor);
+        queue.start();
+
+        Log.w("helpMePlease", "My temp : " + tempreture[0]);
+        Log.w("helpMePlease", "My sky status is : " + sky_status[0]);
 
 
     }
