@@ -1,21 +1,11 @@
 package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -23,23 +13,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -57,21 +45,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
         AddCarFragment.AddCarInterface, GMapFragment.MapInterface {
 
-    static final int REQUEST_CHECK_SETTINGS = 32;
+
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
-    static final int POST_UPDATE = 322;
 
-    GPSService mServer;
-    GPSService.GPSBinder mGPSBinder;
-    boolean mBounded;
     LoginFragment loginFragment;
     ArrayList<Car> tempList;
     DatabaseReference mDatabase;
     SharedPreferences sharedPreferences;
-    FusedLocationProviderClient mFusedLocationProviderClient;
-    public static Location mStartingLocation;
-    LocationRequest mLocationRequest;
 
 
     @Override
@@ -96,11 +77,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 //        mDatabase.child("Drivers").child(key).setValue(d2);
 
 
+        find_weather();
         loginFragment = new LoginFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
+
 
     }
 
@@ -126,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         compareUser[0] = ds.getValue(Driver.class).getUserName();
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
-                            Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                            //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             SharedPreferences.Editor e = sharedPreferences.edit();
                             e.putString("fname", ds.getValue(Driver.class).getFirstName());
                             e.putString("lname", ds.getValue(Driver.class).getLastName());
@@ -175,88 +158,17 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
 
-    @SuppressLint("MissingPermission")
     @Override
     public void openMaps() {
         if (!requestRuntimePermissions()) {
 
-            //open GPS service if not available
-            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-            createLocationRequest();
-            mFusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            mStartingLocation = location;
-                            //Toast.makeText(MainActivity.this, location.getLatitude()+","+location.getLongitude(), Toast.LENGTH_LONG).show();
-                            Intent intent = new Intent(MainActivity.this, GPSService.class);
-                            startService(intent);
-                            if(!mBounded)
-                                bindService(intent, mConnection, 0);
+            startService(new Intent(this, GPSService.class));
 
-                            GMapFragment mapFragment = new GMapFragment();
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.main_Activity_frame_layout, mapFragment)
-                                    .commit();
-                            //  startActivity(new Intent(MainActivity.this, MapActivity.class));
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    //get User to enable location settings
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                }
-            });
-
+            GMapFragment mapFragment = new GMapFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_Activity_frame_layout, mapFragment)
+                    .commit();
         }
-    }
-
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest);
-
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-
-        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                // All location settings are satisfied. The client can initialize
-                // location requests here.
-                // ...
-            }
-        });
-
-        task.addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
-                    // by showing the user a dialog.
-                    try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
-                        ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(MainActivity.this,
-                                REQUEST_CHECK_SETTINGS);
-                    } catch (IntentSender.SendIntentException sendEx) {
-                        // Ignore the error.
-                    }
-                }
-            }
-        });
-
-
-
-
     }
 
     @Override
@@ -298,58 +210,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             requestRuntimePermissions();
     }
 
-    ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mGPSBinder = (GPSService.GPSBinder)service;
-            mServer = mGPSBinder.getServerInstance();
-            mBounded = true;
 
-            //TODO: use mServer to reflect data live on map.
 
-            //Log.d("Binding", "Bounded to the service");
-            Toast.makeText(MainActivity.this, "Bounded to service", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mServer = null;
-            mBounded = false;
-            //Log.d("Binding", "Unbounded from service");
-            Toast.makeText(MainActivity.this, "Unbounded from service", Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    @Override
-    protected void onStart() {
-        Intent intent = new Intent(this, GPSService.class);
-        bindService(intent, mConnection, 0);
-        Log.i("AutoBinding", "Binding");
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d("AutoBinding", "On stop unbinding");
-        mBounded = false;
-        unbindService(mConnection);
-        Log.i("AutoBinding", "UnBinding");
-    }
-    private class MyHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            //TODO: save the data sent through message object and create 'get' methods for those values, and call those methods from fragment to sow them on map.
-            /*switch (msg.what) {
-                case POST_UPDATE:
-                    if (progressDialog.isShowing()) {
-                        progressDialog.setProgress((int) msg.obj);
-                    }
-                    break;
-            }*/
-            super.handleMessage(msg);
-        }
-    }
     @Override
     public void openAddCars() {
         AddCarFragment addCarFragment = new AddCarFragment();
@@ -412,6 +274,47 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void submitCar(String make, String model, String year, String milage) {
         Car newCar = new Car(make, model, year, Integer.parseInt(milage));
         mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("userCar").setValue(newCar);
+
+
+    }
+
+    //TODO: For weather Api - i think it works i will check tomorrow at home
+    public void find_weather() {
+        String url = "api.openweathermap.org/data/2.5/weather?q=Doha&appid=67bc52ba2b975486cd69912aba06019c&units=imperial";
+
+        Log.w("helpMePlease", "Reached the function");
+
+        final String[] tempreture = new String[1];
+        final String[] sky_status = new String[1];
+
+        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONObject main_Object = response.getJSONObject("main");
+                    JSONArray weather = response.getJSONArray("weather");
+                    tempreture[0] = String.valueOf(main_Object.getDouble("temp"));
+                    sky_status[0] = String.valueOf(weather.getJSONObject(1));
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+
+        RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+        queue.add(jor);
+        queue.start();
+
+        Log.w("helpMePlease", "My temp : " + tempreture[0]);
+        Log.w("helpMePlease", "My sky status is : " + sky_status[0]);
 
 
     }
