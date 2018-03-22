@@ -19,6 +19,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
+import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 
 /**
  * Created by Mohamad Alsokromy on 3/1/2018.
@@ -50,11 +51,12 @@ public class GMapFragment extends Fragment {
                @Override
                public void onMapReady(GoogleMap googleMap) {
                    //temp code
-                   LatLng sydney = new LatLng(-33.852, 151.211);
-                   googleMap.addMarker(new MarkerOptions().position(sydney)
-                           .title("Marker in Sydney"));
-                   googleMap.animateCamera(CameraUpdateFactory.newLatLng(sydney));
-                   //TODO: Show current driver location as the center.
+                   LatLng startingLatLng = new LatLng(MainActivity.mStartingLocation.getLatitude(),
+                           MainActivity.mStartingLocation.getLongitude());
+                   googleMap.addMarker(new MarkerOptions().position(startingLatLng)
+                           .title("User Current Location"));
+                   googleMap.moveCamera(CameraUpdateFactory.newLatLng(startingLatLng));
+                   googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                }
            });
        }

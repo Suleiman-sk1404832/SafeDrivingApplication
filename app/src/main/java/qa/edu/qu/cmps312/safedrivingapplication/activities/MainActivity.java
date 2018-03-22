@@ -1,17 +1,34 @@
 package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
         AddCarFragment.AddCarInterface, GMapFragment.MapInterface {
 
-
+    static final int REQUEST_CHECK_SETTINGS = 32;
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
 
@@ -42,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     ArrayList<Car> tempList;
     DatabaseReference mDatabase;
     SharedPreferences sharedPreferences;
+    FusedLocationProviderClient mFusedLocationProviderClient;
+    public static Location mStartingLocation;
+    LocationRequest mLocationRequest;
 
 
     @Override
@@ -71,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
-
 
     }
 
@@ -146,17 +165,84 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
 
+    @SuppressLint("MissingPermission")
     @Override
     public void openMaps() {
         if (!requestRuntimePermissions()) {
 
-            startService(new Intent(this, GPSService.class));
+            //open GPS service if not available
+            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            createLocationRequest();
+            mFusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            mStartingLocation = location;
+                            //Toast.makeText(MainActivity.this, location.getLatitude()+","+location.getLongitude(), Toast.LENGTH_LONG).show();
+                            startService(new Intent(MainActivity.this, GPSService.class));
 
-            GMapFragment mapFragment = new GMapFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.main_Activity_frame_layout, mapFragment)
-                    .commit();
+                            GMapFragment mapFragment = new GMapFragment();
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.main_Activity_frame_layout, mapFragment)
+                                    .commit();
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    //get User to enable location settings
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+            });
+
         }
+    }
+
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+
+        SettingsClient client = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                // All location settings are satisfied. The client can initialize
+                // location requests here.
+                // ...
+            }
+        });
+
+        task.addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(MainActivity.this,
+                                REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
+                    }
+                }
+            }
+        });
+
+
+
+
     }
 
     @Override

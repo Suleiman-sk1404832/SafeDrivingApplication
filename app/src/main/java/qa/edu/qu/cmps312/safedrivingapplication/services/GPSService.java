@@ -9,18 +9,30 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
@@ -33,16 +45,16 @@ public class GPSService extends Service {
 
     LocationManager mLocationManager;
     LocationListener mLocationListener;
-    FusedLocationProviderClient FusedLocationProviderClient;
     float mTotSpeed = 0;
+    float mSpeedCount = 0;
     float mTotTime = 0;
     NotificationManager mNotificationManager;
     Notification mNotification;
     final static int NOTIFICATION_ID = 23;
     public static final int ONE_SEC = 1000;
-    public static final int ONE_MIN = 60*ONE_SEC;
+    public static final int ONE_MIN = 60;
     private static final int SPEED_LIMIT = 20; //km/h
-    final static float KM_HOURS = (float)3.6;
+    final static float KM_HOURS = 3.6f;
     BroadcastReceiver mScreenOffStateReceiver;
     BroadcastReceiver mScreenOnStateReceiver;
     boolean mScreenOn = true;
@@ -74,50 +86,53 @@ public class GPSService extends Service {
             long startTime = 0;
             long endTime = 0;
             boolean isFirstTimeAboveLimit = true;
-            int counter = 0;
-
+            int locationCounter = 0;
             @Override
             public void onLocationChanged(Location location) {
                 //TODO: Calculate the total time and average speed differently as the update interval is not constant.
-                float speed=120; //Simulation Code, adds around 40KM/h*10
+                //float speed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
 
-                /*float speed = location.getSpeed();
+                float speed = location.getSpeed()*KM_HOURS;
 
-                if(speed > (SPEED_LIMIT/KM_HOURS) && mScreenOn ) { // if higher than speed limit and screen is on
+                locationCounter++;
+                if(locationCounter == 5) { // add location every 5 location updates
+                    mLocations.add(location);
+                    locationCounter = 0;
+                }
+
+                if(speed > SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on
                     if(isFirstTimeAboveLimit) {// if first time going above speed limit
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
                     mTotSpeed += speed;
+                    mSpeedCount+=1;
                 }
 
-                else if (speed > (SPEED_LIMIT/KM_HOURS) && !mScreenOn){ // if higher than speed limit but screen is off
-
+                else if (speed > SPEED_LIMIT && !mScreenOn){
+                    // if higher than speed limit but screen is off
                 }
 
-                else if (speed < (SPEED_LIMIT/KM_HOURS) && mScreenOn){ // if lower than speed limit and screen is on
-
+                else if (speed < SPEED_LIMIT && mScreenOn){
+                    // if lower than speed limit and screen is on
                 }
 
-                else {// below speed limit and screen is off (safely driving)
+                else if (speed < SPEED_LIMIT && !mScreenOn) {// below speed limit and screen is off (safely driving)
                     if(!isFirstTimeAboveLimit){ //went above speed limit before,
                                                 //i.e. not already below,
                                                 //i.e. ended a dangerous driving interval
-                        endTime = (location.getTime() - ONE_SEC);
-                        mTotTime += (endTime - startTime);
+                        endTime = location.getTime();
+                        mTotTime += ((endTime - startTime)/ONE_SEC); // save total time in seconds
                         isFirstTimeAboveLimit = true; // reset boolean so we can calculate if driver passes speed limit again
                     }
                 }
-                if(counter >= 10) { // add location every 10 or more seconds
-                    mLocations.add(location);
-                    counter = 0;
-                }
-                counter++;
-                */
-                mTotSpeed += speed; //Simulation Code
-                mTotTime+=10000; //Simulation Code, add 10 seconds.
-                Log.i("Results", "Latest Dangerous Driving Time in Milliseconds: "
-                        +mTotTime+'\n'+"Total Speed in M/S: "+mTotSpeed);
+
+
+                /*mTotSpeed += speed; //Simulation Code
+                mSpeedCount+=1;
+                mTotTime+= (Math.abs(new Random().nextLong()%2000))+8000; //Simulation Code, add 10 seconds.
+                Log.i("Results", "Latest dangerous driving time in seconds: "
+                        +mTotTime*0.001+'\n'+"Average speed in Km/H: "+(mTotSpeed/mSpeedCount));*/
             }
 
             @Override
@@ -133,9 +148,11 @@ public class GPSService extends Service {
             }
         };
 
+
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        //noinspection MissingPermission
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, ONE_SEC, 0, mLocationListener);
+        if (mLocationManager != null) {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, ONE_SEC, 0, mLocationListener);
+        }
 
         final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
@@ -161,7 +178,7 @@ public class GPSService extends Service {
     public float getAverageSpeed() {
         if(mTotTime == 0) // to avoid exception
             return 0;
-        return ((mTotSpeed *KM_HOURS)/(mTotTime/ONE_SEC));
+        return ((mTotSpeed/mSpeedCount));
     }
 
     @Override
@@ -169,17 +186,19 @@ public class GPSService extends Service {
         //noinspection MissingPermission
         mLocationManager.removeUpdates(mLocationListener);
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(NOTIFICATION_ID);
+        if (mNotificationManager != null) {
+            mNotificationManager.cancel(NOTIFICATION_ID);
+        }
         unregisterReceiver(mScreenOffStateReceiver);
         unregisterReceiver(mScreenOnStateReceiver);
 
-        float newTotalTime = getTotalTimeInMinutes();
-        float newAverageSpeed = getAverageSpeed();
-        if (newTotalTime != 0) {
+        float timeInMinutes = getTotalTimeInMinutes();
+        float avgSpeed = getAverageSpeed();
+        if (timeInMinutes != 0) {
             //TODO: Save mLocations array list and both average speed and total time to FireBase.
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
             Log.i("Results", "Total Dangerous Driving Time in minutes: "
-                    +newTotalTime+'\n'+"Average Speed in KM/H: "+newAverageSpeed);
+                    +timeInMinutes+'\n'+"Average Speed in KM/H: "+avgSpeed);
         }
     }
 
