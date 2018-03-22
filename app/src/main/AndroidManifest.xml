@@ -33,7 +33,8 @@
             android:description="@string/service_description"
             android:exported="false" />
 
-        <activity android:name=".activities.MainActivity"></activity>
+        <activity android:name=".activities.MainActivity"/>
+        <activity android:name=".activities.MapActivity"/>
     </application>
 
 </manifest>
