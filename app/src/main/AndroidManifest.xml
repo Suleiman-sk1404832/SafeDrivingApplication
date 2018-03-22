@@ -30,6 +30,9 @@
             </intent-filter>
 
         </activity>
+
+        <activity android:name=".activities.MapActivity"/>
+
         <service
             android:name=".services.GPSService"
             android:description="@string/service_description"

@@ -2,13 +2,19 @@ package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -54,7 +60,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     static final int REQUEST_CHECK_SETTINGS = 32;
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
+    static final int POST_UPDATE = 322;
 
+    GPSService mServer;
+    GPSService.GPSBinder mGPSBinder;
+    boolean mBounded;
     LoginFragment loginFragment;
     ArrayList<Car> tempList;
     DatabaseReference mDatabase;
@@ -179,12 +189,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         public void onSuccess(Location location) {
                             mStartingLocation = location;
                             //Toast.makeText(MainActivity.this, location.getLatitude()+","+location.getLongitude(), Toast.LENGTH_LONG).show();
-                            startService(new Intent(MainActivity.this, GPSService.class));
+                            Intent intent = new Intent(MainActivity.this, GPSService.class);
+                            startService(intent);
+                            if(!mBounded)
+                                bindService(intent, mConnection, 0);
 
                             GMapFragment mapFragment = new GMapFragment();
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.main_Activity_frame_layout, mapFragment)
                                     .commit();
+                            //  startActivity(new Intent(MainActivity.this, MapActivity.class));
 
                         }
                     }).addOnFailureListener(new OnFailureListener() {
@@ -284,8 +298,58 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             requestRuntimePermissions();
     }
 
+    ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mGPSBinder = (GPSService.GPSBinder)service;
+            mServer = mGPSBinder.getServerInstance();
+            mBounded = true;
 
+            //TODO: use mServer to reflect data live on map.
 
+            //Log.d("Binding", "Bounded to the service");
+            Toast.makeText(MainActivity.this, "Bounded to service", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mServer = null;
+            mBounded = false;
+            //Log.d("Binding", "Unbounded from service");
+            Toast.makeText(MainActivity.this, "Unbounded from service", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        Intent intent = new Intent(this, GPSService.class);
+        bindService(intent, mConnection, 0);
+        Log.i("AutoBinding", "Binding");
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("AutoBinding", "On stop unbinding");
+        mBounded = false;
+        unbindService(mConnection);
+        Log.i("AutoBinding", "UnBinding");
+    }
+    private class MyHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            //TODO: save the data sent through message object and create 'get' methods for those values, and call those methods from fragment to sow them on map.
+            /*switch (msg.what) {
+                case POST_UPDATE:
+                    if (progressDialog.isShowing()) {
+                        progressDialog.setProgress((int) msg.obj);
+                    }
+                    break;
+            }*/
+            super.handleMessage(msg);
+        }
+    }
     @Override
     public void openAddCars() {
         AddCarFragment addCarFragment = new AddCarFragment();

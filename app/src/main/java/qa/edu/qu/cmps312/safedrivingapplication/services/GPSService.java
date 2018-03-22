@@ -13,8 +13,10 @@ import android.content.IntentSender;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Messenger;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -59,6 +61,10 @@ public class GPSService extends Service {
     BroadcastReceiver mScreenOnStateReceiver;
     boolean mScreenOn = true;
     private ArrayList<Location> mLocations;
+    GPSBinder mBinder = new GPSBinder();
+    //TODO: use mClientMessenger to send the data to myHandler in the main activity.
+    private Messenger mClientMessenger;
+
 
     @SuppressLint("MissingPermission")
     @Override
@@ -203,5 +209,18 @@ public class GPSService extends Service {
     }
 
     @Override
-    public IBinder onBind(Intent intent){return null;}
+    public IBinder onBind(Intent intent){return mBinder;}
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        //TODO: set whatever communication object between activity and service (ex: Messenger) to null;
+        return super.onUnbind(intent);
+    }
+
+    public class GPSBinder extends Binder {
+        public GPSService getServerInstance() {
+            return GPSService.this;
+        }
+    }
+
 }

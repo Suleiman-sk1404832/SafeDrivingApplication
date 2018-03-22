@@ -3,7 +3,9 @@ package qa.edu.qu.cmps312.safedrivingapplication.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,13 +31,14 @@ public class GMapFragment extends Fragment {
 
     private SupportMapFragment mMapFragment;
     MapInterface mMapInterface;
+    MainActivity mParentActivity;
 
     public GMapFragment(){}
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-       View rootView = inflater.inflate(R.layout.map_fragment_layout, container, false);
+       View rootView = inflater.inflate(R.layout.map_activity_layout, container, false);
 
        Button stop_btn = rootView.findViewById(R.id.stop_btn);
        stop_btn.setOnClickListener(new View.OnClickListener() {
@@ -50,19 +53,20 @@ public class GMapFragment extends Fragment {
            mMapFragment.getMapAsync(new OnMapReadyCallback() {
                @Override
                public void onMapReady(GoogleMap googleMap) {
-                   //temp code
                    LatLng startingLatLng = new LatLng(MainActivity.mStartingLocation.getLatitude(),
                            MainActivity.mStartingLocation.getLongitude());
                    googleMap.addMarker(new MarkerOptions().position(startingLatLng)
-                           .title("User Current Location"));
+                           .title("User Starting Location"));
                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(startingLatLng));
                    googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                }
            });
        }
-        getFragmentManager().beginTransaction().replace(R.id.map, mMapFragment).commit();
+       getFragmentManager().beginTransaction().replace(R.id.map, mMapFragment).commit();
 
-        return rootView;
+       mParentActivity = (MainActivity) getActivity();
+       //Log.i("Dummy",""+mParentActivity.dummyint);
+       return rootView;
     }
 
     @Override
