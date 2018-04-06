@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.app.Fragment;
 import android.widget.Button;
+import android.widget.TextView;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -18,7 +19,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.Locale;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
@@ -31,7 +35,10 @@ public class GMapFragment extends Fragment {
 
     private SupportMapFragment mMapFragment;
     MapInterface mMapInterface;
-    MainActivity mParentActivity;
+    GoogleMap gMap;
+    LatLng mCurrentPosition;
+    TextView mSpeedLimit;
+    Marker mUserMaker;
 
     public GMapFragment(){}
 
@@ -41,6 +48,7 @@ public class GMapFragment extends Fragment {
        View rootView = inflater.inflate(R.layout.map_activity_layout, container, false);
 
        Button stop_btn = rootView.findViewById(R.id.stop_btn);
+       mSpeedLimit = rootView.findViewById(R.id.speed_limit);
        stop_btn.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View view) {
@@ -53,18 +61,18 @@ public class GMapFragment extends Fragment {
            mMapFragment.getMapAsync(new OnMapReadyCallback() {
                @Override
                public void onMapReady(GoogleMap googleMap) {
+                   gMap = googleMap;
                    LatLng startingLatLng = new LatLng(MainActivity.mStartingLocation.getLatitude(),
                            MainActivity.mStartingLocation.getLongitude());
-                   googleMap.addMarker(new MarkerOptions().position(startingLatLng)
-                           .title("User Starting Location"));
-                   googleMap.moveCamera(CameraUpdateFactory.newLatLng(startingLatLng));
-                   googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                   mUserMaker = gMap.addMarker(new MarkerOptions().position(startingLatLng)
+                           .title("Current Location"));
+                   gMap.moveCamera(CameraUpdateFactory.newLatLng(startingLatLng));
+                   gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                }
            });
        }
        getFragmentManager().beginTransaction().replace(R.id.map, mMapFragment).commit();
 
-       mParentActivity = (MainActivity) getActivity();
        //Log.i("Dummy",""+mParentActivity.dummyint);
        return rootView;
     }
@@ -84,5 +92,18 @@ public class GMapFragment extends Fragment {
     public interface MapInterface {
         void stopGPSService();
     }
+
+    public void updateCurrentPosition(LatLng currentPosition) {
+        if(gMap!= null) {
+            this.mCurrentPosition = currentPosition;
+            mUserMaker.setPosition(currentPosition);
+            gMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
+        }
+    }
+
+    public void updateRoadSpeed(float roadSpeed) {
+        mSpeedLimit.setText(String.format(Locale.ENGLISH,"%d",(int)roadSpeed));
+    }
+
 
 }

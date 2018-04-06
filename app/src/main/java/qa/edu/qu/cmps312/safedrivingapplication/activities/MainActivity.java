@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Messenger;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +36,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -65,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         AddCarFragment.AddCarInterface, GMapFragment.MapInterface {
 
     static final int REQUEST_CHECK_SETTINGS = 12;
-    static final int POST_UPDATE = 122;
+    public static final int UPDATE_LOCATION = 122;
+    public static final int UPDATE_SPEED = 123;
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
 
@@ -312,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         public void onServiceConnected(ComponentName name, IBinder service) {
             mGPSBinder = (GPSService.GPSBinder)service;
             mServer = mGPSBinder.getServerInstance();
+            mServer.setMessenger(new Messenger(new MyHandler()));
             mBounded = true;
 
             //TODO: use mServer to reflect data live on map.
@@ -348,14 +352,19 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     private class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
             //TODO: save the data sent through message object and create 'get' methods for those values, and call those methods from fragment to sow them on map.
-            /*switch (msg.what) {
-                case POST_UPDATE:
-                    if (progressDialog.isShowing()) {
-                        progressDialog.setProgress((int) msg.obj);
-                    }
+            switch (msg.what) {
+                case UPDATE_LOCATION: {
+                    Location location = ((Location) msg.obj);
+                    mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(),location.getLongitude()));
                     break;
-            }*/
+                }
+                case UPDATE_SPEED: {
+                    mapFragment.updateRoadSpeed((float)msg.obj);
+                    break;
+                }
+            }
             super.handleMessage(msg);
         }
     }
@@ -465,4 +474,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
 
     }
+
+
 }

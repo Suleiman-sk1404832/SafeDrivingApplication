@@ -16,7 +16,9 @@ import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -29,6 +31,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -45,6 +48,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 
 public class GPSService extends Service {
 
+    private static final String TAG = "Client";
     LocationManager mLocationManager;
     LocationListener mLocationListener;
     float mTotSpeed = 0;
@@ -95,10 +99,21 @@ public class GPSService extends Service {
             int locationCounter = 0;
             @Override
             public void onLocationChanged(Location location) {
-                //TODO: Calculate the total time and average speed differently as the update interval is not constant.
                 //float speed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
-
                 float speed = location.getSpeed()*KM_HOURS;
+
+                //send location to map fragment to use on map
+                try {
+                    if (mClientMessenger!=null) {
+                        mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_LOCATION,
+                                location));
+                        mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_SPEED,
+                                speed));
+                    }
+                } catch (RemoteException e) {
+                    Log.e(TAG, "REMOTE EXCEPTION");
+                }
+
 
                 locationCounter++;
                 if(locationCounter == 5) { // add location every 5 location updates
@@ -106,7 +121,7 @@ public class GPSService extends Service {
                     locationCounter = 0;
                 }
 
-                if(speed > SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on
+                if(speed > SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
                     if(isFirstTimeAboveLimit) {// if first time going above speed limit
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
@@ -133,8 +148,8 @@ public class GPSService extends Service {
                     }
                 }
 
-
-                /*mTotSpeed += speed; //Simulation Code
+/*
+                mTotSpeed += speed; //Simulation Code
                 mSpeedCount+=1;
                 mTotTime+= (Math.abs(new Random().nextLong()%2000))+8000; //Simulation Code, add 10 seconds.
                 Log.i("Results", "Latest dangerous driving time in seconds: "
@@ -222,5 +237,10 @@ public class GPSService extends Service {
             return GPSService.this;
         }
     }
+
+    public void setMessenger(Messenger messenger) {
+        mClientMessenger = messenger;
+    }
+
 
 }

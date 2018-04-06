@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Safe Driving Application</string>
     <string name="stop_drive">Stop Drive</string>
+    <string name="speed_limit">Speed limit of current street</string>
+    <string name="speed_limit_value">80</string>
     <string name="service_description">Keeps track of user location for Safe Driving Application</string>
 </resources>
