@@ -66,12 +66,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
         AddCarFragment.AddCarInterface, GMapFragment.MapInterface {
 
-    static final int REQUEST_CHECK_SETTINGS = 12;
     public static final int UPDATE_LOCATION = 122;
     public static final int UPDATE_SPEED = 123;
+    static final int REQUEST_CHECK_SETTINGS = 12;
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
-
+    public static Location mStartingLocation;
     LoginFragment loginFragment;
     ArrayList<Car> tempList;
     DatabaseReference mDatabase;
@@ -80,9 +80,29 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     GPSService.GPSBinder mGPSBinder;
     boolean mBounded;
     FusedLocationProviderClient mFusedLocationProviderClient;
-    public static Location mStartingLocation;
     LocationRequest mLocationRequest;
+    ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mGPSBinder = (GPSService.GPSBinder) service;
+            mServer = mGPSBinder.getServerInstance();
+            mServer.setMessenger(new Messenger(new MyHandler()));
+            mBounded = true;
 
+            //TODO: use mServer to reflect data live on map.
+
+            //Log.d("Binding", "Bounded to the service");
+            Toast.makeText(MainActivity.this, "Bounded to service", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mServer = null;
+            mBounded = false;
+            //Log.d("Binding", "Unbounded from service");
+            Toast.makeText(MainActivity.this, "Unbounded from service", Toast.LENGTH_SHORT).show();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 //        mDatabase.child("Drivers").child(key).setValue(d2);
 
 
-        find_weather();
+        //    find_weather();
         loginFragment = new LoginFragment();
 
         getSupportFragmentManager().beginTransaction()
@@ -115,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
 
     }
-
 
     //Done with this -  Login Button Logic type user: soly - pass: 1234
     //Test
@@ -185,7 +204,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 .commit();
 
     }
-
 
     @SuppressLint("MissingPermission")
     @Override
@@ -310,29 +328,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             requestRuntimePermissions();
     }
 
-    ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mGPSBinder = (GPSService.GPSBinder)service;
-            mServer = mGPSBinder.getServerInstance();
-            mServer.setMessenger(new Messenger(new MyHandler()));
-            mBounded = true;
-
-            //TODO: use mServer to reflect data live on map.
-
-            //Log.d("Binding", "Bounded to the service");
-            Toast.makeText(MainActivity.this, "Bounded to service", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mServer = null;
-            mBounded = false;
-            //Log.d("Binding", "Unbounded from service");
-            Toast.makeText(MainActivity.this, "Unbounded from service", Toast.LENGTH_SHORT).show();
-        }
-    };
-
     @Override
     protected void onStart() {
         Intent intent = new Intent(this, GPSService.class);
@@ -349,24 +344,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         unbindService(mConnection);
         Log.i("AutoBinding", "UnBinding");
     }
-    private class MyHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
-            switch (msg.what) {
-                case UPDATE_LOCATION: {
-                    Location location = ((Location) msg.obj);
-                    mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(),location.getLongitude()));
-                    break;
-                }
-                case UPDATE_SPEED: {
-                    mapFragment.updateRoadSpeed((float)msg.obj);
-                    break;
-                }
-            }
-            super.handleMessage(msg);
-        }
-    }
+
     @Override
     public void openAddCars() {
         AddCarFragment addCarFragment = new AddCarFragment();
@@ -374,7 +352,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 .replace(R.id.main_Activity_frame_layout, addCarFragment)
                 .commit();
     }
-
 
     @Override
     public void submit(String fname, String lname, String dateOfBirth, String username, String password) {
@@ -399,7 +376,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 .commit();
 
     }
-
 
     public boolean isNotEmpty(String s) {
         if (s.trim().length() > 0)
@@ -472,6 +448,25 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         Log.w("helpMePlease", "My sky status is : " + sky_status[0]);
 
 
+    }
+
+    private class MyHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
+            switch (msg.what) {
+                case UPDATE_LOCATION: {
+                    Location location = ((Location) msg.obj);
+                    mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+                    break;
+                }
+                case UPDATE_SPEED: {
+                    mapFragment.updateRoadSpeed((float) msg.obj);
+                    break;
+                }
+            }
+            super.handleMessage(msg);
+        }
     }
 
 
