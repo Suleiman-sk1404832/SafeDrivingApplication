@@ -13,6 +13,7 @@ import android.content.IntentSender;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -22,6 +23,8 @@ import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -36,7 +39,21 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
@@ -66,8 +83,9 @@ public class GPSService extends Service {
     boolean mScreenOn = true;
     private ArrayList<Location> mLocations;
     GPSBinder mBinder = new GPSBinder();
-    //TODO: use mClientMessenger to send the data to myHandler in the main activity.
     private Messenger mClientMessenger;
+    public static final String URL1 = "https://nominatim.openstreetmap.org/reverse?format=json";
+    public static final String URL2 = "http://overpass-api.de/api/interpreter?data=[out:json];";
 
 
     @SuppressLint("MissingPermission")
@@ -99,16 +117,17 @@ public class GPSService extends Service {
             int locationCounter = 0;
             @Override
             public void onLocationChanged(Location location) {
-                //float speed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
-                float speed = location.getSpeed()*KM_HOURS;
+                //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
+                float driverSpeed = location.getSpeed()*KM_HOURS;
 
                 //send location to map fragment to use on map
                 try {
                     if (mClientMessenger!=null) {
                         mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_LOCATION,
                                 location));
+                        //TODO: send speed limit obtained from async task instead of user speed
                         mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_SPEED,
-                                speed));
+                                driverSpeed));
                     }
                 } catch (RemoteException e) {
                     Log.e(TAG, "REMOTE EXCEPTION");
@@ -119,26 +138,29 @@ public class GPSService extends Service {
                 if(locationCounter == 5) { // add location every 5 location updates
                     mLocations.add(location);
                     locationCounter = 0;
+                    //TODO: execute async task every 5 location updates to obtain speed limit.
+                    //new OSMIdTask().execute(URL1+"&lat="+location.getLatitude()+"&lon="+location.getLongitude());
+
                 }
 
-                if(speed > SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
+                if(driverSpeed > SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
                     if(isFirstTimeAboveLimit) {// if first time going above speed limit
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
-                    mTotSpeed += speed;
+                    mTotSpeed += driverSpeed;
                     mSpeedCount+=1;
                 }
 
-                else if (speed > SPEED_LIMIT && !mScreenOn){
+                else if (driverSpeed > SPEED_LIMIT && !mScreenOn){
                     // if higher than speed limit but screen is off
                 }
 
-                else if (speed < SPEED_LIMIT && mScreenOn){
+                else if (driverSpeed < SPEED_LIMIT && mScreenOn){
                     // if lower than speed limit and screen is on
                 }
 
-                else if (speed < SPEED_LIMIT && !mScreenOn) {// below speed limit and screen is off (safely driving)
+                else if (driverSpeed < SPEED_LIMIT && !mScreenOn) {// below speed limit and screen is off (safely driving)
                     if(!isFirstTimeAboveLimit){ //went above speed limit before,
                                                 //i.e. not already below,
                                                 //i.e. ended a dangerous driving interval
@@ -149,7 +171,7 @@ public class GPSService extends Service {
                 }
 
 /*
-                mTotSpeed += speed; //Simulation Code
+                mTotSpeed += driverSpeed; //Simulation Code
                 mSpeedCount+=1;
                 mTotTime+= (Math.abs(new Random().nextLong()%2000))+8000; //Simulation Code, add 10 seconds.
                 Log.i("Results", "Latest dangerous driving time in seconds: "
@@ -228,7 +250,7 @@ public class GPSService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
-        //TODO: set whatever communication object between activity and service (ex: Messenger) to null;
+        mClientMessenger = null;
         return super.onUnbind(intent);
     }
 
@@ -242,5 +264,102 @@ public class GPSService extends Service {
         mClientMessenger = messenger;
     }
 
+    private class OSMIdTask extends AsyncTask<String, Void, String> {
+
+        HttpURLConnection httpUrlConnection;
+        private String TAG = "OSM_ID_TASK";
+
+        @Override
+        protected void onPreExecute() {
+            // do nothing
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String data = null;
+            try {
+                //TODO: establish connection (done)
+                Thread.sleep(2000);
+                httpUrlConnection = (HttpURLConnection) new URL(params[0])
+                        .openConnection();
+                Log.w("ERROR_STREAM",httpUrlConnection.getErrorStream()+"");
+
+                InputStream in = new BufferedInputStream(
+                        httpUrlConnection.getInputStream()); // ERROR IS HERE
+
+
+                data = readStream(in);
+                Log.i("DATA_READ",data+"");
+
+            } catch (InterruptedException e) {
+                Log.e(TAG, "InterruptedException occurred");
+            } catch (MalformedURLException exception) {
+                Log.e(TAG, "MalformedURLException");
+            } catch (IOException exception) {
+                Log.e(TAG, "IOException1");
+                exception.printStackTrace();
+            } finally {
+                if (httpUrlConnection != null)
+                    httpUrlConnection.disconnect();
+            }
+
+            if (data != null) {
+                return getJSON(data);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (result==null) {
+                //setup if error occurred
+            } else {
+                // TODO: use the value of the result (osm_id) to execute the next async call)
+            }
+        }
+
+        private String readStream(InputStream in) {
+            BufferedReader reader = null;
+            String line;
+            StringBuilder data = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(in));
+                data = new StringBuilder();
+                while ((line = reader.readLine()) != null) {
+                    data.append(line);
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "IOException2");
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return data.toString();
+        }
+    }
+
+    private String getJSON(String data) {
+        final String OSM_ID_TAG = "osm_id";
+        String result = "";
+
+        try {
+
+            //TODO: handle Json object to obtain osm_id element
+            JSONObject responseObject = (JSONObject) new JSONTokener(
+                    data).nextValue();
+            int id = responseObject.optInt(OSM_ID_TAG);
+            Log.i("OSM_ID_CHECK",id+"");
+            Log.i("HERE","REACHED HERE DESSU");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 
 }
