@@ -58,6 +58,7 @@ import java.util.Random;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
+import qa.edu.qu.cmps312.safedrivingapplication.activities.MapActivity;
 
 /**
  * Created by Mohamad Alsokromy on 3/2/2018.
@@ -197,7 +198,7 @@ public class GPSService extends Service {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, ONE_SEC, 0, mLocationListener);
         }
 
-        final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        final Intent intent = new Intent(getApplicationContext(), MapActivity.class);
         final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         mNotification = new Notification.Builder(getApplicationContext())
                 .setSmallIcon(R.mipmap.ic_launcher_round)
