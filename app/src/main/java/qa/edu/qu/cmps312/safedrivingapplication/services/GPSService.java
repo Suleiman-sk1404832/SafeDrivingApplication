@@ -126,7 +126,7 @@ public class GPSService extends Service {
                     if (mClientMessenger!=null) {
                         mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_LOCATION,
                                 location));
-                        //TODO: send speed limit obtained from async task instead of user speed
+                        //TODO: Driver speed which is in KM/H is sent to the map, and it is stored in driverSpeed variable.
                         mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_SPEED,
                                 driverSpeed));
                     }
@@ -195,7 +195,7 @@ public class GPSService extends Service {
 
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (mLocationManager != null) {
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, ONE_SEC, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5*ONE_SEC, 0, mLocationListener);
         }
 
         final Intent intent = new Intent(getApplicationContext(), MapActivity.class);

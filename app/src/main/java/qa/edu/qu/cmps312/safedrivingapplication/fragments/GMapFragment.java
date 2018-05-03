@@ -89,7 +89,6 @@ public class GMapFragment extends Fragment {
        }
        getFragmentManager().beginTransaction().replace(R.id.map, mMapFragment).commit();
 
-       //Log.i("Dummy",""+mParentActivity.dummyint);
        return rootView;
     }
 
@@ -118,7 +117,8 @@ public class GMapFragment extends Fragment {
     }
 
     public void updateRoadSpeed(float roadSpeed) {
-        mSpeedLimit.setText(String.format(Locale.ENGLISH,"%d",(int)roadSpeed));
+        //TODO: in this method we're supposed to be receiving the road speed but we are actually receiving the user speed,
+        mSpeedLimit.setText(String.format(Locale.ENGLISH,"%d",(int)roadSpeed)); // Actually the userSpeed in KM/H
     }
 
 
