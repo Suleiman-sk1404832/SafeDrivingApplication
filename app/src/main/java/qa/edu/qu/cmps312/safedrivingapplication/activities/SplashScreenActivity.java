@@ -23,15 +23,16 @@ import qa.edu.qu.cmps312.safedrivingapplication.R;
 public class SplashScreenActivity extends AppCompatActivity {
 
     private final int SPLASH_DISPLAY_LENGTH = 4000;
-    String skyDescription;
+    ImageView icon;
+    String skyDescription = "Clear";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ImageView icon = findViewById(R.id.splashscreen);
-        skyDescription = find_weather();
         setContentView(R.layout.activity_splash_screen);
 
+        icon = findViewById(R.id.splashscreenImage);
+        // skyDescription = find_weather();
         switch (skyDescription) {
             case "Clear":
                 icon.setImageResource(R.drawable.clearskysplash);
@@ -72,6 +73,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                     JSONArray weather = response.getJSONArray("weather");
                     tempreture[0] = String.valueOf(main_Object.getDouble("temp"));
                     sky_status[0] = String.valueOf(weather.getJSONObject(1));
+                    Log.w("helpMePlease", "test    " + String.valueOf(weather.getJSONObject(1)));
 
 
                 } catch (JSONException e) {

@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 //        mDatabase.child("Drivers").child(key).setValue(d2);
 
 
-        //    find_weather();
+        find_weather();
         loginFragment = new LoginFragment();
 
         getSupportFragmentManager().beginTransaction()
@@ -411,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     //TODO: For weather Api - i think it works i will check tomorrow at home
     public void find_weather() {
-        String url = "api.openweathermap.org/data/2.5/weather?q=Doha&appid=67bc52ba2b975486cd69912aba06019c&units=imperial";
+        String url = "http://api.openweathermap.org/data/2.5/weather?q=Doha&appid=67bc52ba2b975486cd69912aba06019c&units=Metric";
 
         Log.w("helpMePlease", "Reached the function");
 
@@ -426,6 +426,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                     JSONArray weather = response.getJSONArray("weather");
                     tempreture[0] = String.valueOf(main_Object.getDouble("temp"));
                     sky_status[0] = String.valueOf(weather.getJSONObject(1));
+                    Log.w("hello", String.valueOf(main_Object.getDouble("temp")));
+                    Log.w("hello", String.valueOf(weather.getJSONObject(1)));
 
 
                 } catch (JSONException e) {
