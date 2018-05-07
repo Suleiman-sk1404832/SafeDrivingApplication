@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -21,26 +20,9 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -53,8 +35,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
@@ -72,12 +52,14 @@ public class GPSService extends Service {
     float mTotSpeed = 0;
     float mSpeedCount = 0;
     float mTotTime = 0;
+    float mTotDistance = 0;
     NotificationManager mNotificationManager;
     Notification mNotification;
     final static int NOTIFICATION_ID = 23;
     public static final int ONE_SEC = 1000;
     public static final int ONE_MIN = 60;
-    private static final int SPEED_LIMIT = 20; //km/h
+    private static final int RISKY_SPEED_LIMIT = 60; //km/h
+    private static final int DANGEROUS_SPEED_LIMIT = 80; //km/h
     final static float KM_HOURS = 3.6f;
     BroadcastReceiver mScreenOffStateReceiver;
     BroadcastReceiver mScreenOnStateReceiver;
@@ -116,6 +98,7 @@ public class GPSService extends Service {
             long endTime = 0;
             boolean isFirstTimeAboveLimit = true;
             int locationCounter = 0;
+            Location prevLocation = null;
             @Override
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
@@ -134,17 +117,15 @@ public class GPSService extends Service {
                     Log.e(TAG, "REMOTE EXCEPTION");
                 }
 
-
                 locationCounter++;
                 if(locationCounter == 5) { // add location every 5 location updates
                     mLocations.add(location);
                     locationCounter = 0;
                     //TODO: execute async task every 5 location updates to obtain speed limit.
                     //new OSMIdTask().execute(URL1+"&lat="+location.getLatitude()+"&lon="+location.getLongitude());
-
                 }
 
-                if(driverSpeed > SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
+                if(driverSpeed > DANGEROUS_SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
                     if(isFirstTimeAboveLimit) {// if first time going above speed limit
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
@@ -153,15 +134,15 @@ public class GPSService extends Service {
                     mSpeedCount+=1;
                 }
 
-                else if (driverSpeed > SPEED_LIMIT && !mScreenOn){
+                else if (driverSpeed > DANGEROUS_SPEED_LIMIT && !mScreenOn){
                     // if higher than speed limit but screen is off
                 }
 
-                else if (driverSpeed < SPEED_LIMIT && mScreenOn){
+                else if (driverSpeed < DANGEROUS_SPEED_LIMIT && mScreenOn){
                     // if lower than speed limit and screen is on
                 }
 
-                else if (driverSpeed < SPEED_LIMIT && !mScreenOn) {// below speed limit and screen is off (safely driving)
+                else if (driverSpeed < DANGEROUS_SPEED_LIMIT && !mScreenOn) {// below speed limit and screen is off (safely driving)
                     if(!isFirstTimeAboveLimit){ //went above speed limit before,
                                                 //i.e. not already below,
                                                 //i.e. ended a dangerous driving interval
@@ -170,6 +151,15 @@ public class GPSService extends Service {
                         isFirstTimeAboveLimit = true; // reset boolean so we can calculate if driver passes speed limit again
                     }
                 }
+                if(prevLocation!=null) {
+                    mTotTime = prevLocation.getTime() - location.getTime();
+                }
+                else {
+                    prevLocation = location;
+                    mTotTime = 0;
+                }
+                //TODO:Mileage is calculated below, still not tested but I think it is okay
+                mTotDistance += location.getSpeed()*mTotTime; // mTotDistance == Mileage
 
 /*
                 mTotSpeed += driverSpeed; //Simulation Code
