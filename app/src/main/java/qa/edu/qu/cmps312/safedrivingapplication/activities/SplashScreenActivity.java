@@ -32,7 +32,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         skyDescription = find_weather();
         setContentView(R.layout.activity_splash_screen);
 
-        switch (skyDescription) {
+        /*switch (skyDescription) {
             case "Clear":
                 icon.setImageResource(R.drawable.clearskysplash);
                 break;
@@ -40,7 +40,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                 icon.setImageResource(R.drawable.rainsplashscreen);
                 break;
 
-        }
+        }*/
 
         new Handler().postDelayed(new Runnable() {
             @Override

@@ -19,6 +19,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -81,9 +83,13 @@ public class GMapFragment extends Fragment {
                    LatLng startingLatLng = new LatLng(MainActivity.mStartingLocation.getLatitude(),
                            MainActivity.mStartingLocation.getLongitude());
                    mUserMaker = gMap.addMarker(new MarkerOptions().position(startingLatLng)
-                           .title("Current Location"));
+                           .title("Current Location")
+                           .icon(BitmapDescriptorFactory.fromResource(R.drawable.car2)));
                    gMap.moveCamera(CameraUpdateFactory.newLatLng(startingLatLng));
                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+
+
+
                }
            });
        }
