@@ -15,7 +15,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.R;
 public class MainScreenFragment extends Fragment {
 
     MainScreenInterface mainScreenInterface;
-    Button mapsBtn, addCarBtn;
+    Button mapsBtn, addCarBtn ,manageCarBtn;
 
     public MainScreenFragment() {
     }
@@ -27,6 +27,7 @@ public class MainScreenFragment extends Fragment {
 
         mapsBtn = rootView.findViewById(R.id.MgoogleMapsBtn);
         addCarBtn = rootView.findViewById(R.id.MaddCarBtn);
+        manageCarBtn = rootView.findViewById(R.id.manageCar);
 
         //This calls the method in main activity where you do work
         mapsBtn.setOnClickListener(new View.OnClickListener() {
@@ -39,6 +40,13 @@ public class MainScreenFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mainScreenInterface.openAddCars();
+            }
+        });
+
+        manageCarBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mainScreenInterface.openManageCar();
             }
         });
 
@@ -61,5 +69,7 @@ public class MainScreenFragment extends Fragment {
         void openMaps();
 
         void openAddCars();
+
+        void openManageCar();
     }
 }

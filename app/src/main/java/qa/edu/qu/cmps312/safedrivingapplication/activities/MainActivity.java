@@ -57,6 +57,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.fragments.AddCarFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.GMapFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.LoginFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
+import qa.edu.qu.cmps312.safedrivingapplication.fragments.ManageCarFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
@@ -64,7 +65,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.services.GPSService;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
-        AddCarFragment.AddCarInterface, GMapFragment.MapInterface {
+        AddCarFragment.AddCarInterface, GMapFragment.MapInterface, ManageCarFragment.ManageCarInterface {
 
     public static final int UPDATE_LOCATION = 122;
     public static final int UPDATE_SPEED = 123;
@@ -156,12 +157,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             ) {
                         compareUser[0] = ds.getValue(Driver.class).getUserName();
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
+                        Log.i("Info",compareUser[0]+ "  " + comparePass[0]);
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
                             //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             SharedPreferences.Editor e = sharedPreferences.edit();
                             e.putString("fname", ds.getValue(Driver.class).getFirstName());
                             e.putString("lname", ds.getValue(Driver.class).getLastName());
                             e.putString("username", ds.getValue(Driver.class).getUserName());
+                            e.putInt("mileage", ds.getValue(Driver.class).getUserCar().getMilage());
                             e.putString("key", ds.getKey());
                             e.commit();
                             flag[0] = true;
@@ -354,6 +357,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
     @Override
+    public void openManageCar() {
+        ManageCarFragment manageCarFragment = new ManageCarFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, manageCarFragment)
+                .commit();
+    }
+
+    @Override
     public void submit(String fname, String lname, String dateOfBirth, String username, String password) {
         Driver newUser = new Driver(fname, lname, dateOfBirth, username, password);
         String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
@@ -406,7 +417,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         Car newCar = new Car(make, model, year, Integer.parseInt(milage));
         mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("userCar").setValue(newCar);
 
-
     }
 
     //TODO: For weather Api - i think it works i will check tomorrow at home
@@ -450,6 +460,22 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         Log.w("helpMePlease", "My sky status is : " + sky_status[0]);
 
 
+    }
+
+    @Override
+    public void cancelManageCar() {
+        MainScreenFragment mainScreenFragment = new MainScreenFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                .commit();
+
+        Toast.makeText(this, "You cancelled managing car", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void submitManagedCar(String make, String model, String year, String milage) {
+        Car newCar = new Car(make, model, year, Integer.parseInt(milage));
+        mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("userCar").setValue(newCar);
     }
 
     private class MyHandler extends Handler {

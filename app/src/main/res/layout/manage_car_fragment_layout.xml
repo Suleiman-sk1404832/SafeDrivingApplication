@@ -17,7 +17,7 @@
         android:textStyle="bold" />
 
     <EditText
-        android:id="@+id/CRmakeTv"
+        android:id="@+id/mCarMake"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/textView12"
@@ -30,8 +30,8 @@
         android:id="@+id/textView14"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/CRmakeTv"
-        android:layout_below="@+id/CRmakeTv"
+        android:layout_alignStart="@+id/mCarMake"
+        android:layout_below="@+id/mCarMake"
         android:layout_marginTop="21dp"
         android:text="Car Model :"
         android:textColor="@android:color/black"
@@ -39,7 +39,7 @@
         android:textStyle="bold" />
 
     <EditText
-        android:id="@+id/CRmodelTv"
+        android:id="@+id/mModel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/textView14"
@@ -52,8 +52,8 @@
         android:id="@+id/textView16"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/CRmodelTv"
-        android:layout_below="@+id/CRmodelTv"
+        android:layout_alignStart="@+id/mModel"
+        android:layout_below="@+id/mModel"
         android:layout_marginTop="20dp"
         android:text="Car Year :"
         android:textColor="@android:color/black"
@@ -61,7 +61,7 @@
         android:textStyle="bold" />
 
     <EditText
-        android:id="@+id/CRyearTv"
+        android:id="@+id/mYear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/textView16"
@@ -74,8 +74,8 @@
         android:id="@+id/textView18"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/CRyearTv"
-        android:layout_below="@+id/CRyearTv"
+        android:layout_alignStart="@+id/mYear"
+        android:layout_below="@+id/mYear"
         android:layout_marginTop="23dp"
         android:text="Mileage :"
         android:textColor="@android:color/black"
@@ -83,7 +83,7 @@
         android:textStyle="bold" />
 
     <EditText
-        android:id="@+id/CRmilageTv"
+        android:id="@+id/mMileage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/textView18"
@@ -93,7 +93,7 @@
         android:inputType="number" />
 
     <Button
-        android:id="@+id/CRcancelBtn"
+        android:id="@+id/mCanecelButton"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -104,20 +104,20 @@
         android:text="Cancel" />
 
     <Button
-        android:id="@+id/CRclearBtn"
+        android:id="@+id/mSubmitButton"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/CRcancelBtn"
+        android:layout_alignTop="@+id/mCanecelButton"
         android:layout_centerHorizontal="true"
-        android:text="Clear Fields" />
+        android:text="Submit" />
 
     <Button
-        android:id="@+id/CRsubmitBtn"
+        android:id="@+id/mClearFields"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/CRclearBtn"
-        android:layout_toEndOf="@+id/CRmilageTv"
-        android:text="Submit" />
+        android:layout_alignTop="@+id/mSubmitButton"
+        android:layout_toEndOf="@+id/mMileage"
+        android:text="Clear Fields" />
 </RelativeLayout>
