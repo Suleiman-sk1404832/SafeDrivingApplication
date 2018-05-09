@@ -1,6 +1,7 @@
 package qa.edu.qu.cmps312.safedrivingapplication.services;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,9 +10,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
@@ -35,6 +40,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Random;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
@@ -58,17 +64,19 @@ public class GPSService extends Service {
     final static int NOTIFICATION_ID = 23;
     public static final int ONE_SEC = 1000;
     public static final int ONE_MIN = 60;
+    private static final int SAFE_SPEED_LIMIT = 20; //km/h
+    private static final int ABNORMAL_SPEED_LIMIT = 40; //km/h
     private static final int RISKY_SPEED_LIMIT = 60; //km/h
-    private static final int DANGEROUS_SPEED_LIMIT = 80; //km/h
+    private static final int TOP_SPEED_LIMIT = 80; //km/h
     final static float KM_HOURS = 3.6f;
     BroadcastReceiver mScreenOffStateReceiver;
     BroadcastReceiver mScreenOnStateReceiver;
     boolean mScreenOn = true;
-    private ArrayList<Location> mLocations;
+    //private ArrayList<Location> mLocations;
     GPSBinder mBinder = new GPSBinder();
     private Messenger mClientMessenger;
-    public static final String URL1 = "https://nominatim.openstreetmap.org/reverse?format=json";
-    public static final String URL2 = "http://overpass-api.de/api/interpreter?data=[out:json];";
+    //public static final String URL1 = "https://nominatim.openstreetmap.org/reverse?format=json";
+    //public static final String URL2 = "http://overpass-api.de/api/interpreter?data=[out:json];";
 
 
     @SuppressLint("MissingPermission")
@@ -76,7 +84,7 @@ public class GPSService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        mLocations = new ArrayList<>();
+        //mLocations = new ArrayList<>();
 
         mScreenOffStateReceiver = new BroadcastReceiver() {
             @Override
@@ -103,6 +111,7 @@ public class GPSService extends Service {
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
                 float driverSpeed = location.getSpeed()*KM_HOURS;
+                playSoundNotification(getApplicationContext());
 
                 //send location to map fragment to use on map
                 try {
@@ -119,13 +128,13 @@ public class GPSService extends Service {
 
                 locationCounter++;
                 if(locationCounter == 5) { // add location every 5 location updates
-                    mLocations.add(location);
+                    //mLocations.add(location);
                     locationCounter = 0;
                     //TODO: execute async task every 5 location updates to obtain speed limit.
                     //new OSMIdTask().execute(URL1+"&lat="+location.getLatitude()+"&lon="+location.getLongitude());
                 }
 
-                if(driverSpeed > DANGEROUS_SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
+                if(driverSpeed > TOP_SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
                     if(isFirstTimeAboveLimit) {// if first time going above speed limit
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
@@ -134,15 +143,41 @@ public class GPSService extends Service {
                     mSpeedCount+=1;
                 }
 
-                else if (driverSpeed > DANGEROUS_SPEED_LIMIT && !mScreenOn){
-                    // if higher than speed limit but screen is off
+                else if (driverSpeed > (TOP_SPEED_LIMIT+20) && !mScreenOn){
+                    // if higher than 80 KM/H and screen is off, make Alarming sound
+                    playSoundNotification(getApplicationContext());
                 }
 
-                else if (driverSpeed < DANGEROUS_SPEED_LIMIT && mScreenOn){
-                    // if lower than speed limit and screen is on
+                else if (driverSpeed > TOP_SPEED_LIMIT && !mScreenOn){
+                    // if higher than 80 KM/H and screen is off, notify
+
                 }
 
-                else if (driverSpeed < DANGEROUS_SPEED_LIMIT && !mScreenOn) {// below speed limit and screen is off (safely driving)
+                else if (driverSpeed > (RISKY_SPEED_LIMIT) && mScreenOn){
+                    // if higher than 60 KM/H and screen is on, make alarming sound
+                        playSoundNotification(getApplicationContext());
+                }
+
+                else if (driverSpeed > (RISKY_SPEED_LIMIT) && !mScreenOn){
+                    // if higher than 60 KM/H and screen is off, do nothing
+
+                }
+
+                else if (driverSpeed > (ABNORMAL_SPEED_LIMIT) && mScreenOn){
+                    // if higher than 40 KM/H and screen is on, notify
+
+                }
+
+                else if (driverSpeed > (ABNORMAL_SPEED_LIMIT) && !mScreenOn){
+                    // if higher than 40 KM/H and screen is off, do nothing
+                }
+
+                else if (driverSpeed < SAFE_SPEED_LIMIT && mScreenOn){
+                    // if lower than 20 KM/H and screen is on, notify after a while
+
+                }
+
+                else if (driverSpeed < SAFE_SPEED_LIMIT && !mScreenOn) {// below safe speed limit and screen is off (safely driving)
                     if(!isFirstTimeAboveLimit){ //went above speed limit before,
                                                 //i.e. not already below,
                                                 //i.e. ended a dangerous driving interval
@@ -200,6 +235,21 @@ public class GPSService extends Service {
 
     }
 
+    public static void playSoundNotification(Context context) {
+        RingtoneManager manager = new RingtoneManager(context);
+        manager.setType(RingtoneManager.TYPE_NOTIFICATION);
+        Cursor cursor = manager.getCursor();
+        cursor.move(1);
+        String id = cursor.getString(RingtoneManager.ID_COLUMN_INDEX);
+        String uri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX);
+        //String name = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX);
+        //Log.i("TONE", "ID: "+id+", Name: "+name);
+        Ringtone r = RingtoneManager.getRingtone(context, Uri.parse(uri+"/"+id));
+        r.play();
+        while(r.isPlaying());
+        r.play();
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
@@ -229,7 +279,7 @@ public class GPSService extends Service {
         float timeInMinutes = getTotalTimeInMinutes();
         float avgSpeed = getAverageSpeed();
         if (timeInMinutes != 0) {
-            //TODO: Save mLocations array list and both average speed and total time to FireBase.
+            //TODO: Save mLocations array list and both average speed and total time to Trip Class.
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
             Log.i("Results", "Total Dangerous Driving Time in minutes: "
                     +timeInMinutes+'\n'+"Average Speed in KM/H: "+avgSpeed);
@@ -253,104 +303,6 @@ public class GPSService extends Service {
 
     public void setMessenger(Messenger messenger) {
         mClientMessenger = messenger;
-    }
-
-    private class OSMIdTask extends AsyncTask<String, Void, String> {
-
-        HttpURLConnection httpUrlConnection;
-        private String TAG = "OSM_ID_TASK";
-
-        @Override
-        protected void onPreExecute() {
-            // do nothing
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            String data = null;
-            try {
-                //TODO: establish connection (done)
-                Thread.sleep(2000);
-                httpUrlConnection = (HttpURLConnection) new URL(params[0])
-                        .openConnection();
-                Log.w("ERROR_STREAM",httpUrlConnection.getErrorStream()+"");
-
-                InputStream in = new BufferedInputStream(
-                        httpUrlConnection.getInputStream()); // ERROR IS HERE
-
-
-                data = readStream(in);
-                Log.i("DATA_READ",data+"");
-
-            } catch (InterruptedException e) {
-                Log.e(TAG, "InterruptedException occurred");
-            } catch (MalformedURLException exception) {
-                Log.e(TAG, "MalformedURLException");
-            } catch (IOException exception) {
-                Log.e(TAG, "IOException1");
-                exception.printStackTrace();
-            } finally {
-                if (httpUrlConnection != null)
-                    httpUrlConnection.disconnect();
-            }
-
-            if (data != null) {
-                return getJSON(data);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if (result==null) {
-                //setup if error occurred
-            } else {
-                // TODO: use the value of the result (osm_id) to execute the next async call)
-            }
-        }
-
-        private String readStream(InputStream in) {
-            BufferedReader reader = null;
-            String line;
-            StringBuilder data = null;
-            try {
-                reader = new BufferedReader(new InputStreamReader(in));
-                data = new StringBuilder();
-                while ((line = reader.readLine()) != null) {
-                    data.append(line);
-                }
-            } catch (IOException e) {
-                Log.e(TAG, "IOException2");
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            return data.toString();
-        }
-    }
-
-    private String getJSON(String data) {
-        final String OSM_ID_TAG = "osm_id";
-        String result = "";
-
-        try {
-
-            //TODO: handle Json object to obtain osm_id element
-            JSONObject responseObject = (JSONObject) new JSONTokener(
-                    data).nextValue();
-            int id = responseObject.optInt(OSM_ID_TAG);
-            Log.i("OSM_ID_CHECK",id+"");
-            Log.i("HERE","REACHED HERE DESSU");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
 }

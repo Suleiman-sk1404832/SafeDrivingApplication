@@ -28,7 +28,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ImageView icon = findViewById(R.id.splashscreen);
+        ImageView icon = findViewById(R.id.splashscreenImage);
         skyDescription = find_weather();
         setContentView(R.layout.activity_splash_screen);
 
