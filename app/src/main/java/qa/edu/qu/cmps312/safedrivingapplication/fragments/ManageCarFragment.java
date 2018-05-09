@@ -1,5 +1,6 @@
 package qa.edu.qu.cmps312.safedrivingapplication.fragments;
 
+
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,34 +14,36 @@ import android.widget.Toast;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 
-public class AddCarFragment extends Fragment {
+/**
+ * Created by mohdf on 5/8/2018.
+ */
 
-    AddCarInterface addCarInterface;
+public class ManageCarFragment extends Fragment{
+
+    ManageCarInterface manageCarInterface;
 
     EditText make, model, year, milage;
-    Button clearBtn, submitBtn, cancelBtn;
+    Button clearFieldsBtn, submitBtn, cancelBtn;
 
-
-    public AddCarFragment() {
+    public ManageCarFragment(){
 
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.add_car_fragment_layout, container, false);
+        View rootView = inflater.inflate(R.layout.manage_car_fragment_layout, container, false);
 
-        make = rootView.findViewById(R.id.CRmakeTv);
-        model = rootView.findViewById(R.id.CRmodelTv);
-        year = rootView.findViewById(R.id.CRyearTv);
-        milage = rootView.findViewById(R.id.CRmilageTv);
+        make = rootView.findViewById(R.id.mCarMake);
+        model = rootView.findViewById(R.id.mModel);
+        year = rootView.findViewById(R.id.mYear);
+        milage = rootView.findViewById(R.id.mMileage);
 
-        clearBtn = rootView.findViewById(R.id.CRclearBtn);
-        submitBtn = rootView.findViewById(R.id.CRsubmitBtn);
-        cancelBtn = rootView.findViewById(R.id.CRcancelBtn);
+        clearFieldsBtn = rootView.findViewById(R.id.mClearFields);
+        submitBtn = rootView.findViewById(R.id.mSubmitButton);
+        cancelBtn = rootView.findViewById(R.id.mCanecelButton);
 
-
-        clearBtn.setOnClickListener(new View.OnClickListener() {
+        clearFieldsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 make.setText("");
@@ -52,14 +55,14 @@ public class AddCarFragment extends Fragment {
 
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                addCarInterface.cancelAddCar();
+            public void onClick(View view) {
+                manageCarInterface.cancelManageCar();
             }
         });
 
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 String mMake = make.getText().toString();
                 String mModel = model.getText().toString();
                 String mYear = year.getText().toString();
@@ -70,11 +73,12 @@ public class AddCarFragment extends Fragment {
                     else if(Integer.parseInt(milage.getText().toString())< 0 || Integer.parseInt(milage.getText().toString())> 300000)
                         milage.setError("the mileage should be between 0 and 300000");
                     else
-                    addCarInterface.submitCar(mMake, mModel, mYear, mMilage);
+                        manageCarInterface.submitManagedCar(mMake, mModel, mYear, mMilage);
                 } else
                     Toast.makeText(getContext(), "Please Fill all the fields", Toast.LENGTH_SHORT).show();
             }
         });
+
 
 
         return rootView;
@@ -84,11 +88,11 @@ public class AddCarFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            addCarInterface = (AddCarFragment.AddCarInterface) context;
+            manageCarInterface = (ManageCarFragment.ManageCarInterface) context;
 
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
-                    + " must implement AddCarInterface");
+                    + " must implement ManageCarInterface");
         }
     }
 
@@ -99,11 +103,9 @@ public class AddCarFragment extends Fragment {
             return false;
     }
 
+    public interface ManageCarInterface{
+        void cancelManageCar();
 
-    public interface AddCarInterface {
-        void cancelAddCar();
-
-        void submitCar(String make, String model, String year, String milage);
+        void submitManagedCar(String make, String model, String year, String milage);
     }
-
 }

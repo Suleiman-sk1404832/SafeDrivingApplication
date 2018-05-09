@@ -9,8 +9,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="14dp"
+        android:layout_marginStart="77dp"
+        android:layout_marginTop="30dp"
         android:text="First Name:"
         android:textColor="@android:color/black"
         android:textSize="18sp"
@@ -137,8 +137,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/RconfirmPassTv"
         android:layout_marginBottom="17dp"
+        android:layout_marginStart="20dp"
         android:text="Cancel " />
 
     <Button
@@ -157,7 +157,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/RclearBtn"
         android:layout_alignBottom="@+id/RclearBtn"
-        android:layout_marginStart="23dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="20dp"
         android:layout_toEndOf="@+id/RclearBtn"
         android:text="Register" />
 </RelativeLayout>
