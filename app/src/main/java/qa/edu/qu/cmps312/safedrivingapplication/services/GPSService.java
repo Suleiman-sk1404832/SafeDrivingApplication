@@ -111,7 +111,7 @@ public class GPSService extends Service {
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
                 float driverSpeed = location.getSpeed()*KM_HOURS;
-                playSoundNotification(getApplicationContext());
+                //playSoundNotification(getApplicationContext());
 
                 //send location to map fragment to use on map
                 try {
@@ -144,7 +144,7 @@ public class GPSService extends Service {
                 }
 
                 else if (driverSpeed > (TOP_SPEED_LIMIT+20) && !mScreenOn){
-                    // if higher than 80 KM/H and screen is off, make Alarming sound
+                    // if higher than 100 KM/H and screen is off, make Alarming sound
                     playSoundNotification(getApplicationContext());
                 }
 
@@ -165,7 +165,7 @@ public class GPSService extends Service {
 
                 else if (driverSpeed > (ABNORMAL_SPEED_LIMIT) && mScreenOn){
                     // if higher than 40 KM/H and screen is on, notify
-
+                    //TODO: Build a Notification
                 }
 
                 else if (driverSpeed > (ABNORMAL_SPEED_LIMIT) && !mScreenOn){

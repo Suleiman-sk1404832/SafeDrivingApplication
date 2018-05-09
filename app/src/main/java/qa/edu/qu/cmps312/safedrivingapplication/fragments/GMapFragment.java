@@ -124,7 +124,7 @@ public class GMapFragment extends Fragment {
 
     public void updateRoadSpeed(float roadSpeed) {
         //TODO: in this method we're supposed to be receiving the road speed but we are actually receiving the user speed,
-        mSpeedLimit.setText(String.format(Locale.ENGLISH,"%d",(int)roadSpeed)); // Actually the userSpeed in KM/H
+        //mSpeedLimit.setText(String.format(Locale.ENGLISH,"%d",(int)roadSpeed)); // Actually the userSpeed in KM/H
     }
 
 
