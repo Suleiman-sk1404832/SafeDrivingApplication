@@ -2,11 +2,8 @@ package qa.edu.qu.cmps312.safedrivingapplication.fragments;
 
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,28 +16,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
@@ -56,21 +35,31 @@ public class GMapFragment extends Fragment {
     GoogleMap gMap;
     LatLng mCurrentPosition;
     TextView mSpeedLimit;
-    Marker mUserMaker;
+    Marker mUserMarker;
 
     public GMapFragment(){}
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        mCurrentPosition = new LatLng(MainActivity.mStartingLocation.getLatitude(), // set current position to user starting position
+                MainActivity.mStartingLocation.getLongitude());
        View rootView = inflater.inflate(R.layout.map_activity_layout, container, false);
 
        Button stop_btn = rootView.findViewById(R.id.stop_btn);
+       Button relocate_btn = rootView.findViewById(R.id.relocate_btn);
        mSpeedLimit = rootView.findViewById(R.id.speed_limit);
        stop_btn.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View view) {
                mMapInterface.stopGPSService();
+           }
+       });
+       relocate_btn.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
+               gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
            }
        });
 
@@ -80,16 +69,12 @@ public class GMapFragment extends Fragment {
                @Override
                public void onMapReady(GoogleMap googleMap) {
                    gMap = googleMap;
-                   LatLng startingLatLng = new LatLng(MainActivity.mStartingLocation.getLatitude(),
-                           MainActivity.mStartingLocation.getLongitude());
-                   mUserMaker = gMap.addMarker(new MarkerOptions().position(startingLatLng)
+
+                   mUserMarker = gMap.addMarker(new MarkerOptions().position(mCurrentPosition)
                            .title("Current Location")
                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.car2)));
-                   gMap.moveCamera(CameraUpdateFactory.newLatLng(startingLatLng));
+                   gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-
-
-
                }
            });
        }
@@ -117,8 +102,7 @@ public class GMapFragment extends Fragment {
     public void updateCurrentPosition(LatLng currentPosition) {
         if(gMap!= null) {
             this.mCurrentPosition = currentPosition;
-            mUserMaker.setPosition(currentPosition);
-            gMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
+            mUserMarker.setPosition(currentPosition);
         }
     }
 

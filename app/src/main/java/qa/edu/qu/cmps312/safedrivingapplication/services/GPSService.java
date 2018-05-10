@@ -1,7 +1,6 @@
 package qa.edu.qu.cmps312.safedrivingapplication.services;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -17,7 +16,6 @@ import android.location.LocationManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -25,22 +23,10 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
-
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Random;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
@@ -57,11 +43,14 @@ public class GPSService extends Service {
     LocationListener mLocationListener;
     float mTotSpeed = 0;
     float mSpeedCount = 0;
-    float mTotTime = 0;
+    float mTotDangerTime = 0;
+    float mTotTripTime = 0;
     float mTotDistance = 0;
     NotificationManager mNotificationManager;
     Notification mNotification;
     final static int NOTIFICATION_ID = 23;
+    final static int SPEEDING_NOTIFICATION_ID = 24;
+    final static String CHANNEL_ID = "11";
     public static final int ONE_SEC = 1000;
     public static final int ONE_MIN = 60;
     private static final int SAFE_SPEED_LIMIT = 20; //km/h
@@ -85,6 +74,8 @@ public class GPSService extends Service {
         super.onCreate();
 
         //mLocations = new ArrayList<>();
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
 
         mScreenOffStateReceiver = new BroadcastReceiver() {
             @Override
@@ -105,13 +96,17 @@ public class GPSService extends Service {
             long startTime = 0;
             long endTime = 0;
             boolean isFirstTimeAboveLimit = true;
-            int locationCounter = 0;
+            //int locationCounter = 0;
+            int friendlyCounter = 0; // a counter that increments only if user is steadily driving between 10-40 KM/H to give some friendly Toasts
             Location prevLocation = null;
             @Override
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
                 float driverSpeed = location.getSpeed()*KM_HOURS;
                 //playSoundNotification(getApplicationContext());
+                mTotSpeed += driverSpeed;
+                if(driverSpeed!= 0) // driver is not moving
+                    mSpeedCount+=1;
 
                 //send location to map fragment to use on map
                 try {
@@ -126,82 +121,141 @@ public class GPSService extends Service {
                     Log.e(TAG, "REMOTE EXCEPTION");
                 }
 
-                locationCounter++;
+                /*locationCounter++;
                 if(locationCounter == 5) { // add location every 5 location updates
                     //mLocations.add(location);
                     locationCounter = 0;
                     //TODO: execute async task every 5 location updates to obtain speed limit.
                     //new OSMIdTask().execute(URL1+"&lat="+location.getLatitude()+"&lon="+location.getLongitude());
-                }
+                }*/
 
-                if(driverSpeed > TOP_SPEED_LIMIT && mScreenOn ) { // if higher than speed limit and screen is on (dangerous driving)
-                    if(isFirstTimeAboveLimit) {// if first time going above speed limit
+                if(driverSpeed > TOP_SPEED_LIMIT && mScreenOn ) {
+                    // above 80 KM/H and screen is on, VERY DANGEROUS, play sound intensively
+                    if(isFirstTimeAboveLimit) { // if first time going above speed limit
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
-                    mTotSpeed += driverSpeed;
-                    mSpeedCount+=1;
+                    playSoundNotification(getApplicationContext());
+                    playSoundNotification(getApplicationContext());
+                    playSoundNotification(getApplicationContext());
+                    friendlyCounter = 0;
                 }
 
                 else if (driverSpeed > (TOP_SPEED_LIMIT+20) && !mScreenOn){
-                    // if higher than 100 KM/H and screen is off, make Alarming sound
+                    // above 100 KM/H and screen is off, NOT SAFE, make Alarming sound
+                    if(isFirstTimeAboveLimit) { // if first time going above speed limit
+                        startTime = location.getTime(); // record starting time
+                        isFirstTimeAboveLimit = false;
+                    }
                     playSoundNotification(getApplicationContext());
+                    friendlyCounter = 0;
                 }
 
                 else if (driverSpeed > TOP_SPEED_LIMIT && !mScreenOn){
-                    // if higher than 80 KM/H and screen is off, notify
-
+                    // above 80 KM/H and screen is off, NOT SAFE, notify
+                    if(isFirstTimeAboveLimit) { // if first time going above speed limit
+                        startTime = location.getTime(); // record starting time
+                        isFirstTimeAboveLimit = false;
+                    }
+                    notifyUser();
+                    friendlyCounter = 0;
                 }
 
                 else if (driverSpeed > (RISKY_SPEED_LIMIT) && mScreenOn){
-                    // if higher than 60 KM/H and screen is on, make alarming sound
-                        playSoundNotification(getApplicationContext());
+                    // above 60 KM/H and screen is on, NOT SAFE, make alarming sound
+                    if(isFirstTimeAboveLimit) { // if first time going above speed limit
+                        startTime = location.getTime(); // record starting time
+                        isFirstTimeAboveLimit = false;
+                    }
+                    playSoundNotification(getApplicationContext());
+                    friendlyCounter = 0;
                 }
 
                 else if (driverSpeed > (RISKY_SPEED_LIMIT) && !mScreenOn){
-                    // if higher than 60 KM/H and screen is off, do nothing
-
+                    // above 60 KM/H and screen is off, SAFE
+                    if(!isFirstTimeAboveLimit){
+                        endTime = location.getTime();
+                        mTotDangerTime += ((endTime - startTime)/ONE_SEC);
+                        isFirstTimeAboveLimit = true;
+                    }
+                    friendlyCounter = 0;
                 }
 
                 else if (driverSpeed > (ABNORMAL_SPEED_LIMIT) && mScreenOn){
-                    // if higher than 40 KM/H and screen is on, notify
-                    //TODO: Build a Notification
+                    // above 40 KM/H and screen is on, NOT SAFE, notify
+                    if(isFirstTimeAboveLimit) { // if first time going above speed limit
+                        startTime = location.getTime(); // record starting time
+                        isFirstTimeAboveLimit = false;
+                    }
+                    notifyUser();
+                    friendlyCounter = 0;
                 }
 
                 else if (driverSpeed > (ABNORMAL_SPEED_LIMIT) && !mScreenOn){
-                    // if higher than 40 KM/H and screen is off, do nothing
+                    // above 40 KM/H and screen is off, SAFE
+                    if(!isFirstTimeAboveLimit){
+                        endTime = location.getTime();
+                        mTotDangerTime += ((endTime - startTime)/ONE_SEC);
+                        isFirstTimeAboveLimit = true;
+                    }
+                    friendlyCounter = 0;
                 }
 
-                else if (driverSpeed < SAFE_SPEED_LIMIT && mScreenOn){
-                    // if lower than 20 KM/H and screen is on, notify after a while
-
+                else if (driverSpeed > SAFE_SPEED_LIMIT && mScreenOn){
+                    // above 20 KM/H and screen is on, NOT SAFE, less friendly Toast
+                    if(isFirstTimeAboveLimit) {
+                        startTime = location.getTime();
+                        isFirstTimeAboveLimit = false;
+                    }
+                    friendlyCounter++;
+                    if(friendlyCounter == 10) {
+                        Toast.makeText(getApplicationContext(), "Using Your Phone While Driving Can Become The Last Thing You Do!", Toast.LENGTH_LONG).show();
+                        friendlyCounter = 0;
+                    }
                 }
 
-                else if (driverSpeed < SAFE_SPEED_LIMIT && !mScreenOn) {// below safe speed limit and screen is off (safely driving)
+                else if (driverSpeed > 10 && driverSpeed < SAFE_SPEED_LIMIT && mScreenOn){
+                    // above 10 KM/H and below 20 KM/H and screen is on, SEMI SAFE, friendly Toast
+                    if(isFirstTimeAboveLimit) { // if first time driving dangerously
+                        startTime = location.getTime(); // record starting time
+                        isFirstTimeAboveLimit = false;
+                    }
+                    friendlyCounter++;
+                    if(friendlyCounter == 10) {
+                        Toast.makeText(getApplicationContext(), "Please Refrain From Phone Usage While Driving :]", Toast.LENGTH_LONG).show();
+                        friendlyCounter = 0;
+                    }
+                }
+
+                else if (driverSpeed < SAFE_SPEED_LIMIT && !mScreenOn) {
+                    // below 20 KM/H and screen is off, SAFE
                     if(!isFirstTimeAboveLimit){ //went above speed limit before,
                                                 //i.e. not already below,
                                                 //i.e. ended a dangerous driving interval
                         endTime = location.getTime();
-                        mTotTime += ((endTime - startTime)/ONE_SEC); // save total time in seconds
+                        mTotDangerTime += ((endTime - startTime)/ONE_SEC); // save total time in seconds
                         isFirstTimeAboveLimit = true; // reset boolean so we can calculate if driver passes speed limit again
                     }
+                    friendlyCounter = 0;
                 }
+
                 if(prevLocation!=null) {
-                    mTotTime = prevLocation.getTime() - location.getTime();
+                    mTotTripTime = prevLocation.getTime() - location.getTime();
                 }
                 else {
                     prevLocation = location;
-                    mTotTime = 0;
+                    mTotTripTime = 0;
                 }
-                //TODO:Mileage is calculated below, still not tested but I think it is okay
-                mTotDistance += location.getSpeed()*mTotTime; // mTotDistance == Mileage
+                // mTotDistance == Mileage,  in Kilo Meters
+                mTotDistance += driverSpeed* mTotTripTime;
+
 
 /*
                 mTotSpeed += driverSpeed; //Simulation Code
                 mSpeedCount+=1;
-                mTotTime+= (Math.abs(new Random().nextLong()%2000))+8000; //Simulation Code, add 10 seconds.
+                mTotDangerTime+= (Math.abs(new Random().nextLong()%2000))+8000; //Simulation Code, add 10 seconds.
                 Log.i("Results", "Latest dangerous driving time in seconds: "
-                        +mTotTime*0.001+'\n'+"Average speed in Km/H: "+(mTotSpeed/mSpeedCount));*/
+                        +mTotDangerTime*0.001+'\n'+"Average speed in Km/H: "+(mTotSpeed/mSpeedCount));*/
             }
 
             @Override
@@ -235,7 +289,7 @@ public class GPSService extends Service {
 
     }
 
-    public static void playSoundNotification(Context context) {
+    public void playSoundNotification(Context context) {
         RingtoneManager manager = new RingtoneManager(context);
         manager.setType(RingtoneManager.TYPE_NOTIFICATION);
         Cursor cursor = manager.getCursor();
@@ -247,7 +301,24 @@ public class GPSService extends Service {
         Ringtone r = RingtoneManager.getRingtone(context, Uri.parse(uri+"/"+id));
         r.play();
         while(r.isPlaying());
-        r.play();
+    }
+
+    public void notifyUser(){
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.car2)
+                .setContentTitle("Notification about your speed")
+                .setContentText("You are speeding! Slow down! Or stop using your phone while driving!")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+        Log.i("Speeding_Notification", "Notification should appear now");
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(SPEEDING_NOTIFICATION_ID, mBuilder.build());
     }
 
     @Override
@@ -255,34 +326,41 @@ public class GPSService extends Service {
         return START_STICKY;
     }
 
-    public float getTotalTimeInMinutes() {
-        return mTotTime/ONE_MIN;
+    public float getTotDangerTimeInMin() {
+        return mTotDangerTime /ONE_MIN;
     }
 
-    public float getAverageSpeed() {
-        if(mTotTime == 0) // to avoid exception
+    public float getTotTripTimeInMin() {
+        return mTotTripTime /ONE_MIN;
+    }
+
+    public float getTripAvgSpeed() {
+        if(mSpeedCount == 0) // to avoid exception
             return 0;
         return ((mTotSpeed/mSpeedCount));
+    }
+
+    public float getMileage(){
+        return mTotDistance;
     }
 
     @Override
     public void onDestroy() {
         //noinspection MissingPermission
         mLocationManager.removeUpdates(mLocationListener);
-        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (mNotificationManager != null) {
             mNotificationManager.cancel(NOTIFICATION_ID);
         }
         unregisterReceiver(mScreenOffStateReceiver);
         unregisterReceiver(mScreenOnStateReceiver);
 
-        float timeInMinutes = getTotalTimeInMinutes();
-        float avgSpeed = getAverageSpeed();
-        if (timeInMinutes != 0) {
-            //TODO: Save mLocations array list and both average speed and total time to Trip Class.
+        //TODO: make use of available methods to obtain various statistics about the trip and store them in Trip class.
+        if (getTotTripTimeInMin() >= 1) { // there was actually a trip!
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
-            Log.i("Results", "Total Dangerous Driving Time in minutes: "
-                    +timeInMinutes+'\n'+"Average Speed in KM/H: "+avgSpeed);
+            Log.i("RESULTS", "Total Trip Time: " +getTotTripTimeInMin()+" Min \n"
+                    +"Total Distance Traveled: "+getMileage()+" KM \n"
+                    +"Average Speed: "+getTripAvgSpeed()+" KM/H \n"
+            +"Total Dangerous Driving Time: "+getTotDangerTimeInMin()+" Min");
         }
     }
 

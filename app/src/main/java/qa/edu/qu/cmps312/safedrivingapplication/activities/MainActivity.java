@@ -93,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             //TODO: use mServer to reflect data live on map.
 
             //Log.d("Binding", "Bounded to the service");
-            Toast.makeText(MainActivity.this, "Bounded to service", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -101,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             mServer = null;
             mBounded = false;
             //Log.d("Binding", "Unbounded from service");
-            Toast.makeText(MainActivity.this, "Unbounded from service", Toast.LENGTH_SHORT).show();
         }
     };
 
