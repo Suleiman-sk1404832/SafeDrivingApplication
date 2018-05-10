@@ -89,10 +89,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             mServer = mGPSBinder.getServerInstance();
             mServer.setMessenger(new Messenger(new MyHandler()));
             mBounded = true;
-
-            //TODO: use mServer to reflect data live on map.
-
-            //Log.d("Binding", "Bounded to the service");
         }
 
         @Override

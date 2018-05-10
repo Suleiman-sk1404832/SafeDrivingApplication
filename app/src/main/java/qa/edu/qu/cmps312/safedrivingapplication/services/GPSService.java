@@ -114,7 +114,6 @@ public class GPSService extends Service {
                     if (mClientMessenger!=null) {
                         mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_LOCATION,
                                 location));
-                        //TODO: Driver speed which is in KM/H is sent to the map, and it is stored in driverSpeed variable.
                         mClientMessenger.send(Message.obtain(null, MainActivity.UPDATE_SPEED,
                                 driverSpeed));
                     }
