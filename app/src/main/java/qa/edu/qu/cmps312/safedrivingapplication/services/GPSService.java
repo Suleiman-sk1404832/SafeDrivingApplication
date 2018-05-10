@@ -104,7 +104,7 @@ public class GPSService extends Service {
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
                 float driverSpeed = location.getSpeed()*KM_HOURS;
-                //playSoundNotification(getApplicationContext());
+                playSoundNotification(getApplicationContext());
                 mTotSpeed += driverSpeed;
                 if(driverSpeed!= 0) // driver is not moving
                     mSpeedCount+=1;
@@ -300,14 +300,23 @@ public class GPSService extends Service {
     }
 
     public void playSoundNotification(Context context) {
+        boolean found = false;
         RingtoneManager manager = new RingtoneManager(context);
         manager.setType(RingtoneManager.TYPE_NOTIFICATION);
         Cursor cursor = manager.getCursor();
-        cursor.move(1);
+        while (cursor.moveToNext()) { // testing to see what are the tones in the current device
+            String name = cursor.getString((RingtoneManager.TITLE_COLUMN_INDEX));
+            if(name.equals("Tinkerbell")) {
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+            cursor.moveToFirst();
         String id = cursor.getString(RingtoneManager.ID_COLUMN_INDEX);
         String uri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX);
-        //String name = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX);
-        //Log.i("TONE", "ID: "+id+", Name: "+name);
+
+
         Ringtone r = RingtoneManager.getRingtone(context, Uri.parse(uri+"/"+id));
         r.play();
         while(r.isPlaying());
