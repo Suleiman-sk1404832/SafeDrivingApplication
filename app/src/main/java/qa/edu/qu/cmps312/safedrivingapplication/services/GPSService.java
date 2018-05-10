@@ -99,6 +99,7 @@ public class GPSService extends Service {
             //int locationCounter = 0;
             int friendlyCounter = 0; // a counter that increments only if user is steadily driving between 10-40 KM/H to give some friendly Toasts
             Location prevLocation = null;
+            boolean isNotified = false;
             @Override
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
@@ -135,6 +136,7 @@ public class GPSService extends Service {
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
+                    Toast.makeText(getApplicationContext(), "DANGEROUS DRIVING!!!", Toast.LENGTH_SHORT).show();
                     playSoundNotification(getApplicationContext());
                     playSoundNotification(getApplicationContext());
                     playSoundNotification(getApplicationContext());
@@ -148,6 +150,10 @@ public class GPSService extends Service {
                         isFirstTimeAboveLimit = false;
                     }
                     playSoundNotification(getApplicationContext());
+                    if(!isNotified){
+                        notifyUser();
+                        isNotified = true;
+                    }
                     friendlyCounter = 0;
                 }
 
@@ -157,7 +163,10 @@ public class GPSService extends Service {
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
-                    notifyUser();
+                    if(!isNotified){
+                        notifyUser();
+                        isNotified = true;
+                    }
                     friendlyCounter = 0;
                 }
 
@@ -168,6 +177,7 @@ public class GPSService extends Service {
                         isFirstTimeAboveLimit = false;
                     }
                     playSoundNotification(getApplicationContext());
+                    Toast.makeText(getApplicationContext(), "You Are Not Driving Safely!!!", Toast.LENGTH_SHORT).show();
                     friendlyCounter = 0;
                 }
 
@@ -187,7 +197,8 @@ public class GPSService extends Service {
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
-                    notifyUser();
+                    //notifyUser();
+                    Toast.makeText(getApplicationContext(), "Eyes On The Road, Please Stop Using Your Phone", Toast.LENGTH_LONG).show();
                     friendlyCounter = 0;
                 }
 
@@ -311,8 +322,8 @@ public class GPSService extends Service {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.car2)
-                .setContentTitle("Notification about your speed")
-                .setContentText("You are speeding! Slow down! Or stop using your phone while driving!")
+                .setContentTitle("Speeding Notification")
+                .setContentText("You are speeding! Please slow down.")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
