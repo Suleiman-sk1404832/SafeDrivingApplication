@@ -13,6 +13,7 @@
         android:src="@drawable/clearskysplash" />
 
     <TextView
+        android:id="@+id/disc"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="Today We have Clear Skies"

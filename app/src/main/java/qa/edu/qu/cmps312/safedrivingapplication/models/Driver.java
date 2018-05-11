@@ -1,5 +1,7 @@
 package qa.edu.qu.cmps312.safedrivingapplication.models;
 
+import java.util.ArrayList;
+
 public class Driver {
     private String firstName;
     private String lastName;
@@ -7,6 +9,9 @@ public class Driver {
     private String userName;
     private String password;
     private Car userCar;
+    private ArrayList<String> Contacts;
+    private String Latitude;
+    private String Longitude;
 
     public Driver() {
     }
@@ -65,5 +70,29 @@ public class Driver {
 
     public void setUserCar(Car car) {
         this.userCar = car;
+    }
+
+    public ArrayList<String> getContacts() {
+        return Contacts;
+    }
+
+    public void setContacts(ArrayList<String> contacts) {
+        Contacts = contacts;
+    }
+
+    public String getLatitude() {
+        return Latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        Latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return Longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        Longitude = longitude;
     }
 }

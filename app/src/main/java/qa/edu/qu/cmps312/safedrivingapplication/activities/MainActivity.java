@@ -23,12 +23,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
@@ -45,10 +39,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -111,19 +101,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
 
         //TODO: Don't add these two again they are already in the firebase i will make the register do the work of adding tomorrow
-        //Random key
-        String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
-        //Just assigning two drivers to test
-//        Driver d1 = new Driver("Suleiman","Kharroub","02/04/1997","soly","1234");
-//        mDatabase.child("Drivers").child(key).setValue(d1);
-//        key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
-//        Driver d2 = new Driver("Mohammad","Mohammad","18/03/1996","moh","1234");
-//        mDatabase.child("Drivers").child(key).setValue(d2);
-
-
-        find_weather();
+        //String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
         loginFragment = new LoginFragment();
-
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
@@ -131,8 +110,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     }
 
-    //Done with this -  Login Button Logic type user: soly - pass: 1234
-    //Test
+
     @Override
     public void login(String user, String pass) {
         if (isNotEmpty(user) && isNotEmpty(pass)) {
@@ -413,48 +391,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     }
 
-    //TODO: For weather Api - i think it works i will check tomorrow at home
-    public void find_weather() {
-        String url = "http://api.openweathermap.org/data/2.5/weather?q=Doha&appid=67bc52ba2b975486cd69912aba06019c&units=Metric";
-
-        Log.w("helpMePlease", "Reached the function");
-
-        final String[] tempreture = new String[1];
-        final String[] sky_status = new String[1];
-
-        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    JSONObject main_Object = response.getJSONObject("main");
-                    JSONArray weather = response.getJSONArray("weather");
-                    tempreture[0] = String.valueOf(main_Object.getDouble("temp"));
-                    sky_status[0] = String.valueOf(weather.getJSONObject(1));
-                    Log.w("hello", String.valueOf(main_Object.getDouble("temp")));
-                    Log.w("hello", String.valueOf(weather.getJSONObject(1)));
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        });
-
-
-        RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-        queue.add(jor);
-        queue.start();
-
-        Log.w("helpMePlease", "My temp : " + tempreture[0]);
-        Log.w("helpMePlease", "My sky status is : " + sky_status[0]);
-
-
-    }
 
     @Override
     public void cancelManageCar() {

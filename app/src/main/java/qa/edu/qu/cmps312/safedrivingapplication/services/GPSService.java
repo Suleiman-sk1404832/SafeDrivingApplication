@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
@@ -38,7 +39,17 @@ import qa.edu.qu.cmps312.safedrivingapplication.activities.MapActivity;
 
 public class GPSService extends Service {
 
+    public static final int ONE_SEC = 1000;
+    public static final int ONE_MIN = 60;
+    final static int NOTIFICATION_ID = 23;
+    final static int SPEEDING_NOTIFICATION_ID = 24;
+    final static String CHANNEL_ID = "11";
+    final static float KM_HOURS = 3.6f;
     private static final String TAG = "Client";
+    private static final int SAFE_SPEED_LIMIT = 20; //km/h
+    private static final int ABNORMAL_SPEED_LIMIT = 40; //km/h
+    private static final int RISKY_SPEED_LIMIT = 60; //km/h
+    private static int TOP_SPEED_LIMIT = 80; //km/h
     LocationManager mLocationManager;
     LocationListener mLocationListener;
     float mTotSpeed = 0;
@@ -46,18 +57,9 @@ public class GPSService extends Service {
     float mTotDangerTime = 0;
     float mTotTripTime = 0;
     float mTotDistance = 0;
+    SharedPreferences sharedPreferences;
     NotificationManager mNotificationManager;
     Notification mNotification;
-    final static int NOTIFICATION_ID = 23;
-    final static int SPEEDING_NOTIFICATION_ID = 24;
-    final static String CHANNEL_ID = "11";
-    public static final int ONE_SEC = 1000;
-    public static final int ONE_MIN = 60;
-    private static final int SAFE_SPEED_LIMIT = 20; //km/h
-    private static final int ABNORMAL_SPEED_LIMIT = 40; //km/h
-    private static final int RISKY_SPEED_LIMIT = 60; //km/h
-    private static final int TOP_SPEED_LIMIT = 80; //km/h
-    final static float KM_HOURS = 3.6f;
     BroadcastReceiver mScreenOffStateReceiver;
     BroadcastReceiver mScreenOnStateReceiver;
     boolean mScreenOn = true;
@@ -76,6 +78,12 @@ public class GPSService extends Service {
         //mLocations = new ArrayList<>();
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
+        sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+
+        if (sharedPreferences.getString("sky", "Clear").equals("Rain"))
+            TOP_SPEED_LIMIT = TOP_SPEED_LIMIT - 20;
+
+        Log.wtf("zack", TOP_SPEED_LIMIT + " my speed limit");
 
         mScreenOffStateReceiver = new BroadcastReceiver() {
             @Override
@@ -392,14 +400,14 @@ public class GPSService extends Service {
         return super.onUnbind(intent);
     }
 
+    public void setMessenger(Messenger messenger) {
+        mClientMessenger = messenger;
+    }
+
     public class GPSBinder extends Binder {
         public GPSService getServerInstance() {
             return GPSService.this;
         }
-    }
-
-    public void setMessenger(Messenger messenger) {
-        mClientMessenger = messenger;
     }
 
 }
