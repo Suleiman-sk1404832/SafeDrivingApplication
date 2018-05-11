@@ -29,6 +29,9 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MapActivity;
@@ -52,6 +55,7 @@ public class GPSService extends Service {
     private static int TOP_SPEED_LIMIT = 80; //km/h
     LocationManager mLocationManager;
     LocationListener mLocationListener;
+    DatabaseReference mDatabase;
     float mTotSpeed = 0;
     float mSpeedCount = 0;
     float mTotDangerTime = 0;
@@ -75,6 +79,7 @@ public class GPSService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        mDatabase = FirebaseDatabase.getInstance().getReference();
         //mLocations = new ArrayList<>();
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -83,7 +88,7 @@ public class GPSService extends Service {
         if (sharedPreferences.getString("sky", "Clear").equals("Rain"))
             TOP_SPEED_LIMIT = TOP_SPEED_LIMIT - 20;
 
-        Log.wtf("zack", TOP_SPEED_LIMIT + " my speed limit");
+        //Log.wtf("zack", TOP_SPEED_LIMIT + " my speed limit");
 
         mScreenOffStateReceiver = new BroadcastReceiver() {
             @Override
@@ -111,6 +116,11 @@ public class GPSService extends Service {
             @Override
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
+                DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+                mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
+                mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("longitude").setValue(location.getLongitude());
+
+                myRef.setValue("Hello, World!");
                 float driverSpeed = location.getSpeed()*KM_HOURS;
                 playSoundNotification(getApplicationContext());
                 mTotSpeed += driverSpeed;

@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     static final int REQUEST_CHECK_SETTINGS = 12;
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
+    public static Location myLocation;
     public static Location mStartingLocation;
     LoginFragment loginFragment;
     ArrayList<Car> tempList;
@@ -129,14 +130,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             ) {
                         compareUser[0] = ds.getValue(Driver.class).getUserName();
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
-                        Log.i("Info",compareUser[0]+ "  " + comparePass[0]);
+                        Log.i("Info", compareUser[0] + "  " + comparePass[0]);
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
                             //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             SharedPreferences.Editor e = sharedPreferences.edit();
                             e.putString("fname", ds.getValue(Driver.class).getFirstName());
                             e.putString("lname", ds.getValue(Driver.class).getLastName());
                             e.putString("username", ds.getValue(Driver.class).getUserName());
-                            e.putInt("mileage", ds.getValue(Driver.class).getUserCar().getMilage());
+                            // e.putInt("mileage", ds.getValue(Driver.class).getUserCar().getMilage());
                             e.putString("key", ds.getKey());
                             e.commit();
                             flag[0] = true;
@@ -196,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             //Toast.makeText(MainActivity.this, location.getLatitude()+","+location.getLongitude(), Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(MainActivity.this, GPSService.class);
                             startService(intent);
-                            if(!mBounded)
+                            if (!mBounded)
                                 bindService(intent, mConnection, 0);
 
                             GMapFragment mapFragment = new GMapFragment();
@@ -260,8 +261,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         });
 
 
-
-
     }
 
     @Override
@@ -279,12 +278,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
     private boolean requestRuntimePermissions() {
-        if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this,
+        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSIONS_REQUEST_CODE);
             return true;
         }
@@ -295,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if(requestCode == PERMISSIONS_REQUEST_CODE &&
+        if (requestCode == PERMISSIONS_REQUEST_CODE &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED &&
                 grantResults[1] == PackageManager.PERMISSION_GRANTED)
             openMaps();
@@ -336,9 +335,15 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 .commit();
     }
 
+
     @Override
     public void submit(String fname, String lname, String dateOfBirth, String username, String password) {
         Driver newUser = new Driver(fname, lname, dateOfBirth, username, password);
+        ArrayList<String> contacts = new ArrayList<>();
+        contacts.add("moh");
+        newUser.setContacts(contacts);
+        newUser.setLatitude(-1.0);
+        newUser.setLongitude(-1.0);
         String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
         mDatabase.child("Drivers").child(key).setValue(newUser);
 

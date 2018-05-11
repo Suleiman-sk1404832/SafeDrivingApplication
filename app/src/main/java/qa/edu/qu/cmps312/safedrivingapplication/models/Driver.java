@@ -10,8 +10,8 @@ public class Driver {
     private String password;
     private Car userCar;
     private ArrayList<String> Contacts;
-    private String Latitude;
-    private String Longitude;
+    private Double Latitude;
+    private Double Longitude;
 
     public Driver() {
     }
@@ -80,19 +80,19 @@ public class Driver {
         Contacts = contacts;
     }
 
-    public String getLatitude() {
+    public Double getLatitude() {
         return Latitude;
     }
 
-    public void setLatitude(String latitude) {
+    public void setLatitude(Double latitude) {
         Latitude = latitude;
     }
 
-    public String getLongitude() {
+    public Double getLongitude() {
         return Longitude;
     }
 
-    public void setLongitude(String longitude) {
+    public void setLongitude(Double longitude) {
         Longitude = longitude;
     }
 }
