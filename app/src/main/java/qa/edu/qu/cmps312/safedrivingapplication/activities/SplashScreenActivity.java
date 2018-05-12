@@ -1,11 +1,12 @@
 package qa.edu.qu.cmps312.safedrivingapplication.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -23,29 +24,24 @@ import qa.edu.qu.cmps312.safedrivingapplication.R;
 public class SplashScreenActivity extends AppCompatActivity {
 
     private final int SPLASH_DISPLAY_LENGTH = 4000;
-    String skyDescription;
+    SharedPreferences sharedPreferences;
+    private ImageView icon;
+    private TextView disc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ImageView icon = findViewById(R.id.splashscreenImage);
-        skyDescription = find_weather();
         setContentView(R.layout.activity_splash_screen);
 
-        /*switch (skyDescription) {
-            case "Clear":
-                icon.setImageResource(R.drawable.clearskysplash);
-                break;
-            case "Rain":
-                icon.setImageResource(R.drawable.rainsplashscreen);
-                break;
+        icon = findViewById(R.id.splashscreenImage);
+        disc = findViewById(R.id.disc);
+        sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
 
-        }*/
+        find_weather();
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-
                 /* Create an Intent that will start the Menu-Activity. */
                 Intent mainIntent = new Intent(SplashScreenActivity.this, MainActivity.class);
                 SplashScreenActivity.this.startActivity(mainIntent);
@@ -53,25 +49,37 @@ public class SplashScreenActivity extends AppCompatActivity {
             }
         }, SPLASH_DISPLAY_LENGTH);
 
+
     }
 
 
     public String find_weather() {
         String url = "http://api.openweathermap.org/data/2.5/weather?q=Doha&appid=67bc52ba2b975486cd69912aba06019c&units=Metric";
-
-        Log.w("helpMePlease", "Reached the function");
-
-        final String[] tempreture = new String[1];
-        final String[] sky_status = new String[1];
-
         JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    JSONObject main_Object = response.getJSONObject("main");
-                    JSONArray weather = response.getJSONArray("weather");
-                    tempreture[0] = String.valueOf(main_Object.getDouble("temp"));
-                    sky_status[0] = String.valueOf(weather.getJSONObject(1));
+                    JSONArray array = response.getJSONArray("weather");
+                    JSONObject Object = array.getJSONObject(0);
+                    String dis = Object.getString("main");
+
+                    SharedPreferences.Editor e = sharedPreferences.edit();
+
+
+                    switch (dis) {
+                        case "Clear":
+                            disc.setText("Weather is Clear and Dry roads a head!");
+                            icon.setImageResource(R.drawable.clearskysplash);
+                            e.putString("sky", "Clear");
+                            break;
+                        case "Rain":
+                            disc.setText("Weather is Rainy, sloppy roads a head!\n Be careful and drive safe! ");
+                            icon.setImageResource(R.drawable.rainsplashscreen);
+                            e.putString("sky", "Rain");
+                            break;
+
+
+                    }
 
 
                 } catch (JSONException e) {
@@ -90,10 +98,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         queue.add(jor);
         queue.start();
 
-        Log.w("helpMePlease", "My temp : " + tempreture[0]);
-        Log.w("helpMePlease", "My sky status is : " + sky_status[0]);
-
-        return sky_status[0];
+        return "finish";
 
 
     }
