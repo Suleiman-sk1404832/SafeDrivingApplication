@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
@@ -28,9 +29,11 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
-import qa.edu.qu.cmps312.safedrivingapplication.activities.MapActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
 
 /**
@@ -39,9 +42,22 @@ import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
 
 public class GPSService extends Service {
 
+    public static final int ONE_SEC = 1000;
+    public static final int ONE_MIN = 60 * ONE_SEC;
+    final static int NOTIFICATION_ID = 23;
+    final static int SPEEDING1_NOTIFICATION_ID = 24;
+    final static int SPEEDING2_NOTIFICATION_ID = 25;
+    final static String CHANNEL_ID = "11";
+    final static float KM_HOURS = 3.6f;
     private static final String TAG = "Client";
+    private static final int SAFE_SPEED_LIMIT = 20; //km/h
+    private static final int ABNORMAL_SPEED_LIMIT = 40; //km/h
+    private static final int RISKY_SPEED_LIMIT = 60; //km/h
+    private static final int TOP_SPEED_LIMIT = 80; //km/h
     LocationManager mLocationManager;
     LocationListener mLocationListener;
+    DatabaseReference mDatabase;
+    SharedPreferences sharedPreferences;
     float mTotSpeed = 0;
     float mSpeedCount = 0;
     float mTotDangerTime = 0;
@@ -49,17 +65,6 @@ public class GPSService extends Service {
     float mTotDistance = 0;
     NotificationManager mNotificationManager;
     Notification mNotification;
-    final static int NOTIFICATION_ID = 23;
-    final static int SPEEDING1_NOTIFICATION_ID = 24;
-    final static int SPEEDING2_NOTIFICATION_ID = 25;
-    final static String CHANNEL_ID = "11";
-    public static final int ONE_SEC = 1000;
-    public static final int ONE_MIN = 60*ONE_SEC;
-    private static final int SAFE_SPEED_LIMIT = 20; //km/h
-    private static final int ABNORMAL_SPEED_LIMIT = 40; //km/h
-    private static final int RISKY_SPEED_LIMIT = 60; //km/h
-    private static final int TOP_SPEED_LIMIT = 80; //km/h
-    final static float KM_HOURS = 3.6f;
     BroadcastReceiver mScreenOffStateReceiver;
     BroadcastReceiver mScreenOnStateReceiver;
     boolean mScreenOn = true;
@@ -76,6 +81,9 @@ public class GPSService extends Service {
         super.onCreate();
 
         //mLocations = new ArrayList<>();
+
+        sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         mScreenOffStateReceiver = new BroadcastReceiver() {
             @Override
@@ -369,6 +377,10 @@ public class GPSService extends Service {
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
             Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
             //TODO: Add the statistics gathered in the trip class to the data already available in FireBase.
+
+            DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+            myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
+
             Log.i("RESULTS", "Total Trip Time: " +getTotTripTimeInMin()+" Min \n"
                     +"Total Distance Traveled: "+getMileage()+" KM \n"
                     +"Average Speed: "+getTripAvgSpeed()+" KM/H \n"
@@ -385,14 +397,14 @@ public class GPSService extends Service {
         return super.onUnbind(intent);
     }
 
+    public void setMessenger(Messenger messenger) {
+        mClientMessenger = messenger;
+    }
+
     public class GPSBinder extends Binder {
         public GPSService getServerInstance() {
             return GPSService.this;
         }
-    }
-
-    public void setMessenger(Messenger messenger) {
-        mClientMessenger = messenger;
     }
 
 }

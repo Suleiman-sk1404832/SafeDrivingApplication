@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 //        mDatabase.child("Drivers").child(key).setValue(d2);
 
 
-        find_weather();
+        //    find_weather();
         loginFragment = new LoginFragment();
 
         getSupportFragmentManager().beginTransaction()
@@ -214,7 +214,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             ) {
                         compareUser[0] = ds.getValue(Driver.class).getUserName();
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
-                        Log.i("Info", compareUser[0] + "  " + comparePass[0]);
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
                             //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             SharedPreferences.Editor e = sharedPreferences.edit();
