@@ -31,6 +31,7 @@ import android.widget.Toast;
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MapActivity;
+import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
 
 /**
  * Created by Mohamad Alsokromy on 3/2/2018.
@@ -49,10 +50,11 @@ public class GPSService extends Service {
     NotificationManager mNotificationManager;
     Notification mNotification;
     final static int NOTIFICATION_ID = 23;
-    final static int SPEEDING_NOTIFICATION_ID = 24;
+    final static int SPEEDING1_NOTIFICATION_ID = 24;
+    final static int SPEEDING2_NOTIFICATION_ID = 25;
     final static String CHANNEL_ID = "11";
     public static final int ONE_SEC = 1000;
-    public static final int ONE_MIN = 60;
+    public static final int ONE_MIN = 60*ONE_SEC;
     private static final int SAFE_SPEED_LIMIT = 20; //km/h
     private static final int ABNORMAL_SPEED_LIMIT = 40; //km/h
     private static final int RISKY_SPEED_LIMIT = 60; //km/h
@@ -74,8 +76,6 @@ public class GPSService extends Service {
         super.onCreate();
 
         //mLocations = new ArrayList<>();
-        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
 
         mScreenOffStateReceiver = new BroadcastReceiver() {
             @Override
@@ -99,12 +99,16 @@ public class GPSService extends Service {
             //int locationCounter = 0;
             int friendlyCounter = 0; // a counter that increments only if user is steadily driving between 10-40 KM/H to give some friendly Toasts
             Location prevLocation = null;
-            boolean isNotified = false;
             @Override
             public void onLocationChanged(Location location) {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
                 float driverSpeed = location.getSpeed()*KM_HOURS;
-                playSoundNotification(getApplicationContext());
+
+                //uncomment to test..
+                //playSoundNotification(getApplicationContext());
+                notifyUser("80");
+                notifyUser("100");
+
                 mTotSpeed += driverSpeed;
                 if(driverSpeed!= 0) // driver is not moving
                     mSpeedCount+=1;
@@ -149,23 +153,17 @@ public class GPSService extends Service {
                         isFirstTimeAboveLimit = false;
                     }
                     playSoundNotification(getApplicationContext());
-                    if(!isNotified){
-                        notifyUser();
-                        isNotified = true;
-                    }
+                    notifyUser("100");
                     friendlyCounter = 0;
                 }
 
-                else if (driverSpeed > TOP_SPEED_LIMIT && !mScreenOn){
+                else if (driverSpeed > TOP_SPEED_LIMIT && !mScreenOn) {
                     // above 80 KM/H and screen is off, NOT SAFE, notify
-                    if(isFirstTimeAboveLimit) { // if first time going above speed limit
+                    if (isFirstTimeAboveLimit) { // if first time going above speed limit
                         startTime = location.getTime(); // record starting time
                         isFirstTimeAboveLimit = false;
                     }
-                    if(!isNotified){
-                        notifyUser();
-                        isNotified = true;
-                    }
+                    notifyUser("80");
                     friendlyCounter = 0;
                 }
 
@@ -286,9 +284,8 @@ public class GPSService extends Service {
         if (mLocationManager != null) {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5*ONE_SEC, 0, mLocationListener);
         }
-
-        final Intent intent = new Intent(getApplicationContext(), MapActivity.class);
-        final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
         mNotification = new Notification.Builder(getApplicationContext())
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setOngoing(true)
@@ -315,29 +312,23 @@ public class GPSService extends Service {
             cursor.moveToFirst();
         String id = cursor.getString(RingtoneManager.ID_COLUMN_INDEX);
         String uri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX);
-
-
         Ringtone r = RingtoneManager.getRingtone(context, Uri.parse(uri+"/"+id));
         r.play();
         while(r.isPlaying());
     }
 
-    public void notifyUser(){
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-
-
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+    public void notifyUser(String speed){
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                 .setSmallIcon(R.drawable.car2)
                 .setContentTitle("Speeding Notification")
-                .setContentText("You are speeding! Please slow down.")
+                .setContentText("Your speed has exceeded "+speed+"KM/H! Please slow down.")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
-        Log.i("Speeding_Notification", "Notification should appear now");
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(SPEEDING_NOTIFICATION_ID, mBuilder.build());
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+        switch (speed){
+            case "80": notificationManager.notify(SPEEDING1_NOTIFICATION_ID, mBuilder.build());break;
+            case "100": notificationManager.notify(SPEEDING2_NOTIFICATION_ID, mBuilder.build());break;
+        }
     }
 
     @Override
@@ -367,15 +358,17 @@ public class GPSService extends Service {
     public void onDestroy() {
         //noinspection MissingPermission
         mLocationManager.removeUpdates(mLocationListener);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (mNotificationManager != null) {
             mNotificationManager.cancel(NOTIFICATION_ID);
         }
         unregisterReceiver(mScreenOffStateReceiver);
         unregisterReceiver(mScreenOnStateReceiver);
 
-        //TODO: make use of available methods to obtain various statistics about the trip and store them in Trip class.
         if (getTotTripTimeInMin() >= 1) { // there was actually a trip!
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
+            Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
+            //TODO: Add the statistics gathered in the trip class to the data already available in FireBase.
             Log.i("RESULTS", "Total Trip Time: " +getTotTripTimeInMin()+" Min \n"
                     +"Total Distance Traveled: "+getMileage()+" KM \n"
                     +"Average Speed: "+getTripAvgSpeed()+" KM/H \n"

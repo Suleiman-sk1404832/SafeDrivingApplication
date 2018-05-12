@@ -36,14 +36,21 @@ public class GMapFragment extends Fragment {
     LatLng mCurrentPosition;
     TextView mSpeedLimit;
     Marker mUserMarker;
+    private boolean mIsDefaultPosition = false;
 
     public GMapFragment(){}
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        mCurrentPosition = new LatLng(MainActivity.mStartingLocation.getLatitude(), // set current position to user starting position
-                MainActivity.mStartingLocation.getLongitude());
+        if(MainActivity.mStartingLocation != null) {
+            mCurrentPosition = new LatLng(MainActivity.mStartingLocation.getLatitude(), // set current position to user starting position
+                    MainActivity.mStartingLocation.getLongitude());
+        }
+        else{
+            mCurrentPosition = new LatLng(25.3028,51.489);
+            mIsDefaultPosition = true;
+        }
        View rootView = inflater.inflate(R.layout.map_activity_layout, container, false);
 
        Button stop_btn = rootView.findViewById(R.id.stop_btn);
@@ -52,7 +59,7 @@ public class GMapFragment extends Fragment {
        stop_btn.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View view) {
-               mMapInterface.stopGPSService();
+               mMapInterface.stopGPSService(0);
            }
        });
        relocate_btn.setOnClickListener(new View.OnClickListener() {
@@ -96,13 +103,17 @@ public class GMapFragment extends Fragment {
     }
 
     public interface MapInterface {
-        void stopGPSService();
+        void stopGPSService(int flag);
     }
 
     public void updateCurrentPosition(LatLng currentPosition) {
         if(gMap!= null) {
             this.mCurrentPosition = currentPosition;
             mUserMarker.setPosition(currentPosition);
+            if(mIsDefaultPosition) {
+                gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
+                gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            }
         }
     }
 

@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
     public static Location mStartingLocation;
+    int mCurrentFragment;
     LoginFragment loginFragment;
     ArrayList<Car> tempList;
     DatabaseReference mDatabase;
@@ -100,8 +101,69 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     };
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("currentFragment", mCurrentFragment);
+//        Log.i("SHOW", "onSaveIS() was called");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+//        Log.i("SHOW", "onRestoreIS() was called");
+        mCurrentFragment = savedInstanceState.getInt("currentFragment", 0);
+        // remove the lingering login fragment, solution to login fragment showing behind other fragments
+        getSupportFragmentManager().beginTransaction().remove(this.loginFragment).commit();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        Log.i("SHOW", "onCreate() was called");
+        if (savedInstanceState != null) {
+            Log.i("SAVED", "NOT NULL");
+            mCurrentFragment = savedInstanceState.getInt("currentFragment", 0);
+            Log.i("SAVED", "CurrentFragment: " + mCurrentFragment);
+
+            switch (mCurrentFragment) {
+                case 0:
+                    LoginFragment loginFragment = new LoginFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, loginFragment)
+                            .commit();
+                    break;
+                case 1:
+                    MainScreenFragment mainScreenFragment = new MainScreenFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                            .commit();
+                    break;
+                case 2:
+                    RegisterFragment registerFragment = new RegisterFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, registerFragment)
+                            .commit();
+                    break;
+                case 3:
+                    GMapFragment mapFragment = new GMapFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, mapFragment)
+                            .commit();
+                    break;
+                case 4:
+                    AddCarFragment addCarFragment = new AddCarFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, addCarFragment)
+                            .commit();
+                    break;
+                case 5:
+                    ManageCarFragment manageCarFragment = new ManageCarFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, manageCarFragment)
+                            .commit();
+                    break;
+            }
+        }
         setContentView(R.layout.activity_main);
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -127,9 +189,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
+        mCurrentFragment = 0;
 
 
     }
+
+
 
     //Done with this -  Login Button Logic type user: soly - pass: 1234
     //Test
@@ -151,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             ) {
                         compareUser[0] = ds.getValue(Driver.class).getUserName();
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
-                        Log.i("Info",compareUser[0]+ "  " + comparePass[0]);
+                        Log.i("Info", compareUser[0] + "  " + comparePass[0]);
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
                             //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             SharedPreferences.Editor e = sharedPreferences.edit();
@@ -169,6 +234,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                                 .commit();
+                        mCurrentFragment = 1;
                     } else {
                         Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
                     }
@@ -189,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
+        mCurrentFragment = 1;
 
 
     }
@@ -199,13 +266,15 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, registerFragment)
                 .commit();
+        mCurrentFragment = 2;
 
     }
 
     @SuppressLint("MissingPermission")
     @Override
     public void openMaps() {
-        if (!requestRuntimePermissions()) {
+        boolean hasPermission = requestRuntimePermissions();
+        if (!hasPermission) {
 
             //open GPS service if not available
             mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -218,13 +287,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             //Toast.makeText(MainActivity.this, location.getLatitude()+","+location.getLongitude(), Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(MainActivity.this, GPSService.class);
                             startService(intent);
-                            if(!mBounded)
+                            if (!mBounded)
                                 bindService(intent, mConnection, 0);
 
                             GMapFragment mapFragment = new GMapFragment();
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.main_Activity_frame_layout, mapFragment)
                                     .commit();
+                            mCurrentFragment = 3;
                             //  startActivity(new Intent(MainActivity.this, MapActivity.class));
 
                         }
@@ -282,31 +352,33 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         });
 
 
-
-
     }
 
     @Override
-    public void stopGPSService() {
+    public void stopGPSService(int flag) {
 
         //stop service
         stopService(new Intent(this, GPSService.class));
+        //if service is stopped with an error
+        if (flag == -1)
+            return;
 
         //go back to mainScreenFragment
         MainScreenFragment mainScreenFragment = new MainScreenFragment();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
+        mCurrentFragment = 1;
 
     }
 
     private boolean requestRuntimePermissions() {
-        if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this,
+        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSIONS_REQUEST_CODE);
             return true;
         }
@@ -317,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if(requestCode == PERMISSIONS_REQUEST_CODE &&
+        if (requestCode == PERMISSIONS_REQUEST_CODE &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED &&
                 grantResults[1] == PackageManager.PERMISSION_GRANTED)
             openMaps();
@@ -329,17 +401,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     protected void onStart() {
         Intent intent = new Intent(this, GPSService.class);
         bindService(intent, mConnection, 0);
-        Log.i("AutoBinding", "Binding");
+//        Log.i("SHOW", "onStart() was called");
         super.onStart();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("AutoBinding", "On stop unbinding");
         mBounded = false;
         unbindService(mConnection);
-        Log.i("AutoBinding", "UnBinding");
+//        Log.i("SHOW", "onStop() was called");
     }
 
     @Override
@@ -348,6 +419,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, addCarFragment)
                 .commit();
+        mCurrentFragment = 4;
     }
 
     @Override
@@ -356,6 +428,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, manageCarFragment)
                 .commit();
+        mCurrentFragment = 5;
     }
 
     @Override
@@ -368,6 +441,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
+        mCurrentFragment = 0;
 
         Toast.makeText(this, "User Created ! Login now.", Toast.LENGTH_SHORT).show();
     }
@@ -379,6 +453,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
+        mCurrentFragment = 0;
 
     }
 
@@ -391,8 +466,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     @Override
     protected void onDestroy() {
-        //Log.i("SHOW", "OnDestroy() was called");
-        //TODO: handle the problem of fragments when rotating the view.
+//        Log.i("SHOW", "OnDestroy() was called");
+        stopGPSService(-1); // if service is running, then service was forced to stop from activity, stop service with error flag
         super.onDestroy();
     }
 
@@ -402,6 +477,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
+        mCurrentFragment = 1;
 
         Toast.makeText(this, "You cancelled adding car", Toast.LENGTH_SHORT).show();
     }
@@ -462,6 +538,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
+        mCurrentFragment = 1;
 
         Toast.makeText(this, "You cancelled managing car", Toast.LENGTH_SHORT).show();
     }
@@ -476,17 +553,19 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         @Override
         public void handleMessage(Message msg) {
             GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
-            switch (msg.what) {
-                case UPDATE_LOCATION: {
-                    Location location = ((Location) msg.obj);
-                    mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-                    break;
+            if (mapFragment != null)
+                switch (msg.what) {
+                    case UPDATE_LOCATION: {
+                        Location location = ((Location) msg.obj);
+                        mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+                        break;
+                    }
+                    case UPDATE_SPEED: {
+
+                        mapFragment.updateRoadSpeed((float) msg.obj);
+                        break;
+                    }
                 }
-                case UPDATE_SPEED: {
-                    mapFragment.updateRoadSpeed((float) msg.obj);
-                    break;
-                }
-            }
             super.handleMessage(msg);
         }
     }

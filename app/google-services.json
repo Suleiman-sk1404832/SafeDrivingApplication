@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "836673073571-30vl6f92luhiaorcmt4bqr43d7n160tt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "qa.edu.qu.cmps312.safedrivingapplication",
+            "certificate_hash": "a65447ece8253aaa32b05b20bca476d4982c5ccd"
+          }
+        },
+        {
           "client_id": "836673073571-j430obpae3a8k58iduqo2qo5df07qjao.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
