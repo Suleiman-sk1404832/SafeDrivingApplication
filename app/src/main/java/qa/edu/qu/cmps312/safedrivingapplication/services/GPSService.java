@@ -329,13 +329,18 @@ public class GPSService extends Service {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                 .setSmallIcon(R.drawable.car2)
                 .setContentTitle("Speeding Notification")
-                .setContentText("Your speed has exceeded "+speed+"KM/H! Please slow down.")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
         switch (speed){
-            case "80": notificationManager.notify(SPEEDING1_NOTIFICATION_ID, mBuilder.build());break;
-            case "100": notificationManager.notify(SPEEDING2_NOTIFICATION_ID, mBuilder.build());break;
+            case "80":
+                mBuilder.setContentText("Your speed has exceeded "+speed+"KM/H! Please be careful.");
+                notificationManager.notify(SPEEDING1_NOTIFICATION_ID, mBuilder.build());
+                break;
+            case "100":
+                mBuilder.setContentText("Your speed has exceeded "+speed+"KM/H! Please slow down.");
+                notificationManager.notify(SPEEDING2_NOTIFICATION_ID, mBuilder.build());
+            break;
         }
     }
 
