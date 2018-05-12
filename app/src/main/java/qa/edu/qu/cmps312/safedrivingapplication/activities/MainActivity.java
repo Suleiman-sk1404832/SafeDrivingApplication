@@ -121,9 +121,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         super.onCreate(savedInstanceState);
 //        Log.i("SHOW", "onCreate() was called");
         if (savedInstanceState != null) {
-            Log.i("SAVED", "NOT NULL");
             mCurrentFragment = savedInstanceState.getInt("currentFragment", 0);
-            Log.i("SAVED", "CurrentFragment: " + mCurrentFragment);
 
             switch (mCurrentFragment) {
                 case 0:

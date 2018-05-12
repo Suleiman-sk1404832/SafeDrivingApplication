@@ -106,8 +106,8 @@ public class GPSService extends Service {
 
                 //uncomment to test..
                 //playSoundNotification(getApplicationContext());
-                notifyUser("80");
-                notifyUser("100");
+                //notifyUser("80");
+                //notifyUser("100");
 
                 mTotSpeed += driverSpeed;
                 if(driverSpeed!= 0) // driver is not moving
