@@ -29,11 +29,15 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
+import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
 
 /**
@@ -375,11 +379,27 @@ public class GPSService extends Service {
 
         if (getTotTripTimeInMin() >= 1) { // there was actually a trip!
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
-            Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
+            final Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
             //TODO: Add the statistics gathered in the trip class to the data already available in FireBase.
 
-            DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
-            myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
+            final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+            myRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.getValue(Driver.class).getTrip() == null) {
+                        Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
+                        trip.setNoOfTrips(1);
+                        myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
+                    } else
+                        myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error) {
+                    // Failed to read value
+                    Log.w(TAG, "Failed to read value.", error.toException());
+                }
+            });
 
             Log.i("RESULTS", "Total Trip Time: " +getTotTripTimeInMin()+" Min \n"
                     +"Total Distance Traveled: "+getMileage()+" KM \n"

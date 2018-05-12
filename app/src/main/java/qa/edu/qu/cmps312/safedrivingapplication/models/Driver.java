@@ -12,6 +12,7 @@ public class Driver {
     private ArrayList<String> Contacts;
     private Double Latitude;
     private Double Longitude;
+    private Trip trip;
 
     public Driver() {
     }
@@ -94,5 +95,13 @@ public class Driver {
 
     public void setLongitude(Double longitude) {
         Longitude = longitude;
+    }
+
+    public Trip getTrip() {
+        return trip;
+    }
+
+    public void setTrip(Trip trip) {
+        this.trip = trip;
     }
 }
