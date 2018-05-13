@@ -1,5 +1,8 @@
 package qa.edu.qu.cmps312.safedrivingapplication.models;
 
+
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 
 public class Driver {
@@ -9,10 +12,11 @@ public class Driver {
     private String userName;
     private String password;
     private Car userCar;
-    private ArrayList<String> Contacts;
-    private Double Latitude;
-    private Double Longitude;
     private Trip trip;
+    private ArrayList<String> contacts;
+    private LatLng position;
+    private String type;
+
 
     public Driver() {
     }
@@ -23,6 +27,11 @@ public class Driver {
         this.dateOfBirth = dateOfBirth;
         this.userName = userName;
         this.password = password;
+        this.contacts = new ArrayList<String>();
+        this.contacts.add("Test1");
+        this.contacts.add("Test2");
+        this.contacts.add("Test3");
+        this.position = new LatLng(0.1, 0.1);
     }
 
     public String getFirstName() {
@@ -73,35 +82,36 @@ public class Driver {
         this.userCar = car;
     }
 
-    public ArrayList<String> getContacts() {
-        return Contacts;
-    }
-
-    public void setContacts(ArrayList<String> contacts) {
-        Contacts = contacts;
-    }
-
-    public Double getLatitude() {
-        return Latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        Latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return Longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        Longitude = longitude;
-    }
-
     public Trip getTrip() {
         return trip;
     }
 
     public void setTrip(Trip trip) {
         this.trip = trip;
+    }
+
+
+    public LatLng getPosition() {
+        return position;
+    }
+
+    public void setPosition(LatLng position) {
+        this.position = position;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public ArrayList<String> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(ArrayList<String> contacts) {
+        this.contacts = contacts;
     }
 }
