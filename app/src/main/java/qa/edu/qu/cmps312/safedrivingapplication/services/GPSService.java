@@ -2,6 +2,7 @@ package qa.edu.qu.cmps312.safedrivingapplication.services;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -18,6 +19,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -51,7 +53,7 @@ public class GPSService extends Service {
     final static int NOTIFICATION_ID = 23;
     final static int SPEEDING1_NOTIFICATION_ID = 24;
     final static int SPEEDING2_NOTIFICATION_ID = 25;
-    final static String CHANNEL_ID = "11";
+    final static String CHANNEL_ID = "notify_001";
     final static float KM_HOURS = 3.6f;
     private static final String TAG = "Client";
     private static final int SAFE_SPEED_LIMIT = 20; //km/h
@@ -67,8 +69,6 @@ public class GPSService extends Service {
     float mTotDangerTime = 0;
     float mTotTripTime = 0;
     float mTotDistance = 0;
-    NotificationManager mNotificationManager;
-    Notification mNotification;
     BroadcastReceiver mScreenOffStateReceiver;
     BroadcastReceiver mScreenOnStateReceiver;
     boolean mScreenOn = true;
@@ -84,6 +84,7 @@ public class GPSService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        createNotificationChannel();
         //mLocations = new ArrayList<>();
 
         sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
@@ -298,13 +299,14 @@ public class GPSService extends Service {
         }
         final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-        mNotification = new Notification.Builder(getApplicationContext())
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                .setSmallIcon(R.drawable.car2)
                 .setOngoing(true)
                 .setContentTitle("Safe Driving is ON")
                 .setContentText("Click to access Safe Driving App")
-                .setContentIntent(pendingIntent).build();
-        startForeground(NOTIFICATION_ID, mNotification);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent);
+        startForeground(NOTIFICATION_ID, notification.build());
 
     }
 
@@ -333,8 +335,9 @@ public class GPSService extends Service {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                 .setSmallIcon(R.drawable.car2)
                 .setContentTitle("Speeding Notification")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
+        createNotificationChannel();
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
         switch (speed){
             case "80":
@@ -345,6 +348,25 @@ public class GPSService extends Service {
                 mBuilder.setContentText("Your speed has exceeded "+speed+"KM/H! Please slow down.");
                 notificationManager.notify(SPEEDING2_NOTIFICATION_ID, mBuilder.build());
             break;
+        }
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Speeding Channel";
+            String description = "Channel human readable title";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+
         }
     }
 
@@ -375,9 +397,9 @@ public class GPSService extends Service {
     public void onDestroy() {
         //noinspection MissingPermission
         mLocationManager.removeUpdates(mLocationListener);
-        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (mNotificationManager != null) {
-            mNotificationManager.cancel(NOTIFICATION_ID);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.cancel(NOTIFICATION_ID);
         }
         unregisterReceiver(mScreenOffStateReceiver);
         unregisterReceiver(mScreenOnStateReceiver);
