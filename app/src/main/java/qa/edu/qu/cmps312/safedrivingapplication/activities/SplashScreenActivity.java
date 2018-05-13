@@ -77,6 +77,11 @@ public class SplashScreenActivity extends AppCompatActivity {
                             icon.setImageResource(R.drawable.rainsplashscreen);
                             e.putString("sky", "Rain");
                             break;
+                        case "Dust":
+                            disc.setText("Weather is Dusty, low visibility ahead!\n Be careful and drive safe! ");
+                            icon.setImageResource(R.drawable.dust);
+                            e.putString("sky", "Dust");
+                            break;
 
 
                     }

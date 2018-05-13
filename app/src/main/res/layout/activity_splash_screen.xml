@@ -7,8 +7,8 @@
 
     <ImageView
         android:id="@+id/splashscreenImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="409dp"
+        android:layout_height="318dp"
         android:layout_gravity="center"
         android:src="@drawable/clearskysplash" />
 
