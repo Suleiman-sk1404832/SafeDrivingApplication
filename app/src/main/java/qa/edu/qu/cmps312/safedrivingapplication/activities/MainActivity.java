@@ -59,13 +59,14 @@ import qa.edu.qu.cmps312.safedrivingapplication.fragments.LoginFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.MainScreenFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.ManageCarFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
+import qa.edu.qu.cmps312.safedrivingapplication.fragments.StatisticsFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
 import qa.edu.qu.cmps312.safedrivingapplication.services.GPSService;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
         MainScreenFragment.MainScreenInterface, RegisterFragment.RegisterInterface,
-        AddCarFragment.AddCarInterface, GMapFragment.MapInterface, ManageCarFragment.ManageCarInterface {
+        AddCarFragment.AddCarInterface, GMapFragment.MapInterface, ManageCarFragment.ManageCarInterface, StatisticsFragment.StatisticsFragmentInterface {
 
     public static final int UPDATE_LOCATION = 122;
     public static final int UPDATE_SPEED = 123;
@@ -430,6 +431,15 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
     @Override
+    public void showStats() {
+        StatisticsFragment statisticsFragment = new StatisticsFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, statisticsFragment)
+                .commit();
+        //TODO: mCurrentFragment number not sure what is this just add it for this Fragment
+    }
+
+    @Override
     public void submit(String fname, String lname, String dateOfBirth, String username, String password) {
         Driver newUser = new Driver(fname, lname, dateOfBirth, username, password);
         String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
@@ -545,6 +555,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void submitManagedCar(String make, String model, String year, String milage) {
         Car newCar = new Car(make, model, year, Integer.parseInt(milage));
         mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("userCar").setValue(newCar);
+    }
+
+    @Override
+    public void back() {
+        MainScreenFragment mainScreenFragment = new MainScreenFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                .commit();
     }
 
     private class MyHandler extends Handler {

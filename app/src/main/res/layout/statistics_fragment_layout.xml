@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/black"
+            android:text="number of trips:"/>
+
+        <TextView
+            android:id="@+id/noOfTripsTV"
+            android:layout_width="80dp"
+            android:layout_height="20dp"
+            android:textColor="@color/black"
+            android:layout_marginLeft="1dp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:textColor="@color/black"
+            android:text="Average speed:"/>
+
+        <TextView
+            android:id="@+id/averageSpeedTV"
+            android:layout_width="80dp"
+            android:layout_height="20dp"
+            android:textColor="@color/black"
+            android:layout_marginLeft="1dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/black"
+            android:text="Total time in minutes:"/>
+
+        <TextView
+            android:id="@+id/totalTimeTV"
+            android:layout_width="260dp"
+            android:layout_height="20dp"
+            android:textColor="@color/black"
+            android:layout_marginLeft="1dp"
+            />
+
+
+    </LinearLayout>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:textColor="@color/black"
+        android:text="Total distance travelled:"/>
+
+    <TextView
+        android:id="@+id/totalDistanceTravelledTV"
+        android:layout_width="240dp"
+        android:layout_height="20dp"
+        android:textColor="@color/black"
+        android:layout_marginLeft="1dp"
+        />
+
+</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/black"
+            android:text="Total danger time in minutes:"/>
+
+        <TextView
+            android:id="@+id/totalDangerousTimeTV"
+            android:layout_width="220dp"
+            android:layout_height="20dp"
+            android:textColor="@color/black"
+            android:layout_marginLeft="1dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/black"
+            android:text="Average time per trip:"/>
+
+        <TextView
+            android:id="@+id/AverageTimePerTripTV"
+            android:layout_width="220dp"
+            android:layout_height="20dp"
+            android:textColor="@color/black"
+            android:layout_marginLeft="1dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/black"
+            android:text="Average travelled distance per trip:"/>
+
+        <TextView
+            android:id="@+id/AverageTravelledDistancePerTripTV"
+            android:layout_width="180dp"
+            android:layout_height="20dp"
+            android:textColor="@color/black"
+            android:layout_marginLeft="1dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/black"
+            android:text="Average danger time per trip:"/>
+
+        <TextView
+            android:id="@+id/AverageDangerTimePerTripTV"
+            android:layout_width="180dp"
+            android:layout_height="20dp"
+            android:textColor="@color/black"
+            android:layout_marginLeft="1dp"
+            />
+
+    </LinearLayout>
+
+    <Button
+        android:layout_marginLeft="158dp"
+        android:layout_marginTop="240dp"
+        android:id="@+id/statsBackBtn"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"/>
+
+
+
+</LinearLayout>
