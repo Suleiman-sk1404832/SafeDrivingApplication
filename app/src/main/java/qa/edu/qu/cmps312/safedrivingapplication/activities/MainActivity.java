@@ -210,8 +210,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // This method is called once with the initial value and again
                     // whenever data at this location is updated.
-                    for (DataSnapshot ds : dataSnapshot.getChildren()
-                            ) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
                         compareUser[0] = ds.getValue(Driver.class).getUserName();
                         comparePass[0] = ds.getValue(Driver.class).getPassword();
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
@@ -220,7 +220,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             e.putString("fname", ds.getValue(Driver.class).getFirstName());
                             e.putString("lname", ds.getValue(Driver.class).getLastName());
                             e.putString("username", ds.getValue(Driver.class).getUserName());
-                            e.putInt("mileage", ds.getValue(Driver.class).getUserCar().getMilage());
+                            if (ds.getValue(Driver.class).getUserCar() != null)
+                                e.putInt("mileage", ds.getValue(Driver.class).getUserCar().getMilage());
                             e.putString("key", ds.getKey());
                             e.commit();
                             flag[0] = true;

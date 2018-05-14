@@ -1,8 +1,6 @@
 package qa.edu.qu.cmps312.safedrivingapplication.models;
 
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
 
 public class Driver {
@@ -14,7 +12,8 @@ public class Driver {
     private Car userCar;
     private Trip trip;
     private ArrayList<String> contacts;
-    private LatLng position;
+    private Double longitude;
+    private Double latitude;
     private String type;
 
 
@@ -31,7 +30,8 @@ public class Driver {
         this.contacts.add("Test1");
         this.contacts.add("Test2");
         this.contacts.add("Test3");
-        this.position = new LatLng(0.1, 0.1);
+        this.longitude = 0.1;
+        this.latitude = 0.1;
     }
 
     public String getFirstName() {
@@ -91,12 +91,20 @@ public class Driver {
     }
 
 
-    public LatLng getPosition() {
-        return position;
+    public Double getLongitude() {
+        return longitude;
     }
 
-    public void setPosition(LatLng position) {
-        this.position = position;
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 
     public String getType() {
