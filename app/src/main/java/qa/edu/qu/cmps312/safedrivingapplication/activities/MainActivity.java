@@ -61,7 +61,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.fragments.ManageCarFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.RegisterFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.fragments.StatisticsFragment;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
-import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
+import qa.edu.qu.cmps312.safedrivingapplication.models.User;
 import qa.edu.qu.cmps312.safedrivingapplication.services.GPSService;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.SuccessfulLogin,
@@ -175,10 +175,10 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         //Random key
         String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
         //Just assigning two drivers to test
-//        Driver d1 = new Driver("Suleiman","Kharroub","02/04/1997","soly","1234");
+//        User d1 = new User("Suleiman","Kharroub","02/04/1997","soly","1234");
 //        mDatabase.child("Drivers").child(key).setValue(d1);
 //        key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
-//        Driver d2 = new Driver("Mohammad","Mohammad","18/03/1996","moh","1234");
+//        User d2 = new User("Mohammad","Mohammad","18/03/1996","moh","1234");
 //        mDatabase.child("Drivers").child(key).setValue(d2);
 
 
@@ -213,16 +213,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                     // whenever data at this location is updated.
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
-                        compareUser[0] = ds.getValue(Driver.class).getUserName();
-                        comparePass[0] = ds.getValue(Driver.class).getPassword();
+                        compareUser[0] = ds.getValue(User.class).getUserName();
+                        comparePass[0] = ds.getValue(User.class).getPassword();
                         if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
                             //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             SharedPreferences.Editor e = sharedPreferences.edit();
-                            e.putString("fname", ds.getValue(Driver.class).getFirstName());
-                            e.putString("lname", ds.getValue(Driver.class).getLastName());
-                            e.putString("username", ds.getValue(Driver.class).getUserName());
-                            if (ds.getValue(Driver.class).getUserCar() != null)
-                                e.putInt("mileage", ds.getValue(Driver.class).getUserCar().getMilage());
+                            e.putString("fname", ds.getValue(User.class).getFirstName());
+                            e.putString("lname", ds.getValue(User.class).getLastName());
+                            e.putString("username", ds.getValue(User.class).getUserName());
+                            if (ds.getValue(User.class).getUserCar() != null)
+                                e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
                             e.putString("key", ds.getKey());
                             e.commit();
                             flag[0] = true;
@@ -439,9 +439,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         //TODO: mCurrentFragment number not sure what is this just add it for this Fragment
     }
 
+
     @Override
-    public void submit(String fname, String lname, String dateOfBirth, String username, String password) {
-        Driver newUser = new Driver(fname, lname, dateOfBirth, username, password);
+    public void submit(String fname, String lname, String dateOfBirth, String username, String password, String type) {
+        User newUser = new User(fname, lname, dateOfBirth, username, password);
+        newUser.setType(type);
         String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
         mDatabase.child("Drivers").child(key).setValue(newUser);
 

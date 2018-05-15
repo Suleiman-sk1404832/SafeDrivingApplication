@@ -1,7 +1,6 @@
 package qa.edu.qu.cmps312.safedrivingapplication.services;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -39,8 +38,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
-import qa.edu.qu.cmps312.safedrivingapplication.models.Driver;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
+import qa.edu.qu.cmps312.safedrivingapplication.models.User;
 
 /**
  * Created by Mohamad Alsokromy on 3/2/2018.
@@ -413,7 +412,7 @@ public class GPSService extends Service {
             myRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.getValue(Driver.class).getTrip() == null) {
+                    if (dataSnapshot.getValue(User.class).getTrip() == null) {
                         Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
                         trip.setNoOfTrips(1);
                         myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);

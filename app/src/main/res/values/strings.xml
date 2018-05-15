@@ -5,4 +5,10 @@
     <string name="speed_limit">Speed limit of current street</string>
     <string name="speed_limit_value">80</string>
     <string name="service_description">Keeps track of user location for Safe Driving Application</string>
+
+    <string-array name="types_array">
+        <item>Driver</item>
+        <item>Boss</item>
+    </string-array>
+
 </resources>

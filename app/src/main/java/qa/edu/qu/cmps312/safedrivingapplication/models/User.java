@@ -3,7 +3,7 @@ package qa.edu.qu.cmps312.safedrivingapplication.models;
 
 import java.util.ArrayList;
 
-public class Driver {
+public class User {
     private String firstName;
     private String lastName;
     private String dateOfBirth;
@@ -17,10 +17,10 @@ public class Driver {
     private String type;
 
 
-    public Driver() {
+    public User() {
     }
 
-    public Driver(String firstName, String lastName, String dateOfBirth, String userName, String password) {
+    public User(String firstName, String lastName, String dateOfBirth, String userName, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;

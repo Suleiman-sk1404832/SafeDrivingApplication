@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
@@ -18,6 +19,7 @@ public class RegisterFragment extends Fragment {
 
     Button clearBtn, cancelBtn, registerBtn;
     EditText fname, lname, dateOfBirth, username, password, confirmPass;
+    Spinner spinner;
     RegisterInterface registerInterface;
 
 
@@ -41,6 +43,8 @@ public class RegisterFragment extends Fragment {
         clearBtn = rootView.findViewById(R.id.RclearBtn);
         cancelBtn = rootView.findViewById(R.id.RcancelBtn);
         registerBtn = rootView.findViewById(R.id.RsubmitBtn);
+        spinner = rootView.findViewById(R.id.spinner);
+
 
         //Buttons logic
         clearBtn.setOnClickListener(new View.OnClickListener() {
@@ -75,8 +79,7 @@ public class RegisterFragment extends Fragment {
 
                         registerInterface.submit(fname.getText().toString(), lname.getText().toString(),
                                 dateOfBirth.getText().toString(), username.getText().toString(),
-                                password.getText().toString());
-
+                                password.getText().toString(), spinner.getSelectedItem().toString());
                     } else
                         Toast.makeText(getContext(), "Passwords Don't match", Toast.LENGTH_SHORT).show();
 
@@ -110,7 +113,7 @@ public class RegisterFragment extends Fragment {
     }
 
     public interface RegisterInterface {
-        void submit(String fname, String lname, String dateOfBirth, String username, String password);
+        void submit(String fname, String lname, String dateOfBirth, String username, String password, String type);
 
         void cancel();
     }
