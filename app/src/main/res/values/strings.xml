@@ -5,6 +5,17 @@
     <string name="speed_limit">Speed limit of current street</string>
     <string name="speed_limit_value">80</string>
     <string name="service_description">Keeps track of user location for Safe Driving Application</string>
+    <string name="showing_data_for">Showing Data for:</string>
+    <string name="number_of_trips">Number of trips:</string>
+    <string name="average_speed">Average speed:</string>
+    <string name="total_time">Total time:</string>
+    <string name="total_distance_travelled">Total distance travelled:</string>
+    <string name="total_danger_time">Total danger time:</string>
+    <string name="average_time_per_trip">Average time per trip:</string>
+    <string name="average_distance_travelled_per_trip">Average distance travelled per trip:</string>
+    <string name="average_danger_driving_time_per_trip">Average danger driving time per trip:</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
 
     <string-array name="types_array">
         <item>Driver</item>

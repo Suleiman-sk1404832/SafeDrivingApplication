@@ -3,63 +3,86 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_between_fields">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:textStyle="bold"
+            android:text="@string/showing_data_for"
             android:textColor="@color/black"
-            android:text="number of trips:"/>
+            android:layout_marginStart="100dp"/>
+
+        <TextView
+            android:id="@+id/usernameTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginStart="@dimen/start_margin"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_between_fields">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/start_margin"
+            android:textColor="@color/black"
+            android:text="@string/number_of_trips"/>
 
         <TextView
             android:id="@+id/noOfTripsTV"
             android:layout_width="80dp"
-            android:layout_height="20dp"
+            android:layout_height="wrap_content"
             android:textColor="@color/black"
-            android:layout_marginLeft="1dp"
+            android:layout_marginStart="@dimen/start_margin"
             />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
+            android:layout_marginStart="30dp"
             android:textColor="@color/black"
-            android:text="Average speed:"/>
+            android:text="@string/average_speed"/>
 
         <TextView
             android:id="@+id/averageSpeedTV"
-            android:layout_width="80dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textColor="@color/black"
-            android:layout_marginLeft="1dp"
+            android:layout_marginStart="@dimen/start_margin"
             />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_between_fields">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:layout_marginStart="@dimen/start_margin"
             android:textColor="@color/black"
-            android:text="Total time in minutes:"/>
+            android:text="@string/total_time"/>
 
         <TextView
             android:id="@+id/totalTimeTV"
-            android:layout_width="260dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textColor="@color/black"
-            android:layout_marginLeft="1dp"
+            android:layout_marginStart="@dimen/start_margin"
             />
 
 
@@ -67,21 +90,21 @@
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="20dp">
+    android:layout_marginTop="@dimen/space_between_fields">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="4dp"
+        android:layout_marginStart="@dimen/start_margin"
         android:textColor="@color/black"
-        android:text="Total distance travelled:"/>
+        android:text="@string/total_distance_travelled"/>
 
     <TextView
         android:id="@+id/totalDistanceTravelledTV"
-        android:layout_width="240dp"
-        android:layout_height="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:textColor="@color/black"
-        android:layout_marginLeft="1dp"
+        android:layout_marginStart="@dimen/start_margin"
         />
 
 </LinearLayout>
@@ -89,21 +112,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="@dimen/space_between_fields">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:layout_marginStart="@dimen/start_margin"
             android:textColor="@color/black"
-            android:text="Total danger time in minutes:"/>
+            android:text="@string/total_danger_time"/>
 
         <TextView
             android:id="@+id/totalDangerousTimeTV"
-            android:layout_width="220dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textColor="@color/black"
-            android:layout_marginLeft="1dp"
+            android:layout_marginStart="@dimen/start_margin"
             />
 
     </LinearLayout>
@@ -111,21 +134,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="@dimen/space_between_fields">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:layout_marginStart="@dimen/start_margin"
             android:textColor="@color/black"
-            android:text="Average time per trip:"/>
+            android:text="@string/average_time_per_trip"/>
 
         <TextView
             android:id="@+id/AverageTimePerTripTV"
-            android:layout_width="220dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textColor="@color/black"
-            android:layout_marginLeft="1dp"
+            android:layout_marginStart="@dimen/start_margin"
             />
 
     </LinearLayout>
@@ -133,21 +156,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="@dimen/space_between_fields">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:layout_marginStart="@dimen/start_margin"
             android:textColor="@color/black"
-            android:text="Average travelled distance per trip:"/>
+            android:text="@string/average_distance_travelled_per_trip"/>
 
         <TextView
             android:id="@+id/AverageTravelledDistancePerTripTV"
             android:layout_width="180dp"
             android:layout_height="20dp"
             android:textColor="@color/black"
-            android:layout_marginLeft="1dp"
+            android:layout_marginStart="@dimen/start_margin"
             />
 
     </LinearLayout>
@@ -155,34 +178,51 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="@dimen/space_between_fields">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:layout_marginStart="@dimen/start_margin"
             android:textColor="@color/black"
-            android:text="Average danger time per trip:"/>
+            android:text="@string/average_danger_driving_time_per_trip"/>
 
         <TextView
             android:id="@+id/AverageDangerTimePerTripTV"
             android:layout_width="180dp"
             android:layout_height="20dp"
             android:textColor="@color/black"
-            android:layout_marginLeft="1dp"
+            android:layout_marginStart="@dimen/start_margin"
             />
 
     </LinearLayout>
 
-    <Button
-        android:layout_marginLeft="158dp"
-        android:layout_marginTop="240dp"
-        android:id="@+id/statsBackBtn"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Back"/>
+        android:layout_marginTop="195dp">
 
+        <Button
+            android:id="@+id/statsBackBtn"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="100dp"
+            android:text="@string/back" />
+
+        <Button
+            android:id="@+id/statsNextBtn"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="100dp"
+            android:text="@string/next" />
+
+    </RelativeLayout>
 
 
 </LinearLayout>
