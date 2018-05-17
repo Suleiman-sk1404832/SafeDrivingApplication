@@ -161,6 +161,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             .replace(R.id.main_Activity_frame_layout, manageCarFragment)
                             .commit();
                     break;
+                case 6:
+                    StatisticsFragment statFragment = new StatisticsFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_Activity_frame_layout, statFragment)
+                            .commit();
+                    break;
             }
         }
         setContentView(R.layout.activity_main);
@@ -438,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, statisticsFragment)
                 .commit();
-        //TODO: mCurrentFragment number not sure what is this just add it for this Fragment
+        mCurrentFragment = 6;
     }
 
 
@@ -567,6 +573,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
+        mCurrentFragment = 1;
     }
 
     private class MyHandler extends Handler {
