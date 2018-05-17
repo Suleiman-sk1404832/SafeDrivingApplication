@@ -215,29 +215,31 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
                         compareUser[0] = ds.getValue(User.class).getUserName();
                         comparePass[0] = ds.getValue(User.class).getPassword();
-                        if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
-                            //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                            SharedPreferences.Editor e = sharedPreferences.edit();
-                            e.putString("fname", ds.getValue(User.class).getFirstName());
-                            e.putString("lname", ds.getValue(User.class).getLastName());
-                            e.putString("username", ds.getValue(User.class).getUserName());
-                            if (ds.getValue(User.class).getUserCar() != null)
-                                e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
-                            e.putString("key", ds.getKey());
-                            e.commit();
-                            flag[0] = true;
+                        if (comparePass[0] != null && compareUser[0] != null) {
+                            if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
+                                //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                                SharedPreferences.Editor e = sharedPreferences.edit();
+                                e.putString("fname", ds.getValue(User.class).getFirstName());
+                                e.putString("lname", ds.getValue(User.class).getLastName());
+                                e.putString("username", ds.getValue(User.class).getUserName());
+                                if (ds.getValue(User.class).getUserCar() != null)
+                                    e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
+                                e.putString("key", ds.getKey());
+                                e.commit();
+                                flag[0] = true;
+                            }
+
+                            if (flag[0]) {
+                                MainScreenFragment mainScreenFragment = new MainScreenFragment();
+                                getSupportFragmentManager().beginTransaction()
+                                        .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                                        .commit();
+                                mCurrentFragment = 1;
+                            } else {
+                                Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
-                    if (flag[0]) {
-                        MainScreenFragment mainScreenFragment = new MainScreenFragment();
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
-                                .commit();
-                        mCurrentFragment = 1;
-                    } else {
-                        Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
-                    }
-
                 }
 
                 @Override
