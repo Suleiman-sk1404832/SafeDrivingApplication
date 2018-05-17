@@ -26,6 +26,9 @@ public class User {
         this.dateOfBirth = dateOfBirth;
         this.userName = userName;
         this.password = password;
+        //TODO:Remove- For testing will remove later
+        this.trip = new Trip(3, 10, 500, 67);
+        this.trip.setNoOfTrips(2);
         this.contacts = new ArrayList<String>();
         this.contacts.add("Test1");
         this.contacts.add("Test2");

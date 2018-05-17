@@ -8,6 +8,9 @@ public class Trip {
     private float totDistanceTraveled;
     private float avgSpeed;
 
+    public Trip() {
+    }
+
     public Trip(float totTimeInMin, float totDangerTimeInMin, float totDistanceTraveled, float avgSpeed) {
         this.totTimeInMin = totTimeInMin;
         this.totDangerTimeInMin = totDangerTimeInMin;

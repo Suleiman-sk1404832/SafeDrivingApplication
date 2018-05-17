@@ -12,6 +12,9 @@ public class Contact {
         this.contactId = contactId;
     }
 
+    public Contact() {
+    }
+
     public String getContactLname() {
         return contactLname;
     }

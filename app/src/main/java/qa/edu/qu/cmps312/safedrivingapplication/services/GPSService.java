@@ -116,6 +116,12 @@ public class GPSService extends Service {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
                 float driverSpeed = location.getSpeed()*KM_HOURS;
 
+                //TODO: Updating location of the current user.
+                DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+                myRef.child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
+                myRef.child(sharedPreferences.getString("key", "-1")).child("longitude").setValue(location.getLongitude());
+
+
                 //uncomment to test..
                 //playSoundNotification(getApplicationContext());
                 //notifyUser("80");
@@ -417,6 +423,7 @@ public class GPSService extends Service {
                         trip.setNoOfTrips(1);
                         myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
                     } else
+                        trip.setNoOfTrips(dataSnapshot.getValue(User.class).getTrip().getNoOfTrips() + 1);
                         myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
                 }
 
