@@ -19,6 +19,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Locale;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.models.User;
@@ -38,11 +40,12 @@ public class StatisticsFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
 
+
     Trip trip;
 
-    TextView noOfTripTV, totalDistanceTV, totalDangerTV, totalTimeTV,
+    TextView usernameTV, noOfTripTV, totalDistanceTV, totalDangerTV, totalTimeTV,
             averageDistanceTV,averageDangerTV, averageTimeTV,averageSpeedTV;
-    Button backBtn;
+    Button backBtn, nxtBtn, prevBtn;
     public StatisticsFragment(){
 
     }
@@ -52,7 +55,23 @@ public class StatisticsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.statistics_fragment_layout, container, false);
 
+        nxtBtn = rootView.findViewById(R.id.statsNextBtn);
+        nxtBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // implement moving between users
+            }
+        });
 
+        prevBtn = rootView.findViewById(R.id.statsPrevBtn);
+        prevBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // implement moving between users
+            }
+        });
+
+        usernameTV = rootView.findViewById(R.id.usernameTV);
         noOfTripTV = rootView.findViewById(R.id.noOfTripsTV);
         totalDistanceTV = rootView.findViewById(R.id.totalDistanceTravelledTV);
         totalDangerTV = rootView.findViewById(R.id.totalDangerousTimeTV);
@@ -63,6 +82,12 @@ public class StatisticsFragment extends Fragment {
         averageTimeTV = rootView.findViewById(R.id.AverageTimePerTripTV);
 
         sharedPreferences = getContext().getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+        Boolean isBoss = sharedPreferences.getString("type","0").equals("Boss");
+        if(!isBoss) {
+            nxtBtn.setVisibility(View.GONE);
+            prevBtn.setVisibility(View.GONE);
+        }
+//        Log.i("SHOW_ME", "key: "+sharedPreferences.getString("key", "-1"));
 
         trip = new Trip();
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -73,30 +98,33 @@ public class StatisticsFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) { // all users in db
+                    if (ds.getKey().equals(sharedPreferences.getString("key", "-1"))) { // current user
+                        if (ds.getValue(User.class).getType().equals("Driver")) { // if current user is a driver, show his data and hide next button
+                            trip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
+                            trip.setAvgSpeed(ds.getValue(User.class).getTrip().getAvgSpeed());
+                            trip.setTotDangerTimeInMin(ds.getValue(User.class).getTrip().getTotDangerTimeInMin());
+                            trip.setTotDistanceTraveled(ds.getValue(User.class).getTrip().getTotDistanceTraveled());
+                            trip.setTotTimeInMin(ds.getValue(User.class).getTrip().getTotTimeInMin());
+                            usernameTV.setText(ds.getValue(User.class).getUserName());
+                            noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", trip.getNoOfTrips()));
+                            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", trip.getTotDistanceTraveled()));
+                            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", trip.getTotDangerTimeInMin()));
+                            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", trip.getTotTimeInMin()));
+                            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f", trip.getAverageSpeed()));
+                            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", trip.getAverageTimeInMin()));
+                            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", trip.getAverageDistanceTraveled()));
+                            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", trip.getAverageDangerousTimeInMin()));
+                            //Log.e("trip info",Float.toString(trip.getAverageDangerousTimeInMin()));
+                            //Log.e("trip info",Float.toString(trip.getAverageDistanceTraveled()));
+                            //Log.e("trip info",Float.toString(trip.getAverageTimeInMin()));
 
-                    if (ds.getValue(User.class).getTrip() != null) {
-                        trip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
-                        trip.setAvgSpeed(ds.getValue(User.class).getTrip().getAvgSpeed());
-                        trip.setTotDangerTimeInMin(ds.getValue(User.class).getTrip().getTotDangerTimeInMin());
-                        trip.setTotDistanceTraveled(ds.getValue(User.class).getTrip().getTotDistanceTraveled());
-                        trip.setTotTimeInMin(ds.getValue(User.class).getTrip().getTotTimeInMin());
-                        noOfTripTV.setText(Integer.toString(trip.getNoOfTrips()));
-                        totalDistanceTV.setText(Float.toString(trip.getTotDistanceTraveled()));
-                        totalDangerTV.setText(Float.toString(trip.getTotDangerTimeInMin()));
-                        totalTimeTV.setText(Float.toString(trip.getTotTimeInMin()));
+                        }
+                        else { // a Boss type user
 
-                        averageSpeedTV.setText(Float.toString(trip.getAvgSpeed()));
-                        averageTimeTV.setText(Float.toString(trip.getAverageTimeInMin()));
-                        averageDistanceTV.setText(Float.toString(trip.getAverageDistanceTraveled()));
-                        averageDangerTV.setText(Float.toString(trip.getTotDangerTimeInMin()));
-                        //Log.e("trip info",Float.toString(trip.getAverageDangerousTimeInMin()));
-                        //Log.e("trip info",Float.toString(trip.getAverageDistanceTraveled()));
-                        //Log.e("trip info",Float.toString(trip.getAverageTimeInMin()));
+                        }
                     }
-
                 }
-
             }
 
 
@@ -134,6 +162,10 @@ public class StatisticsFragment extends Fragment {
 
 
         return rootView;
+    }
+
+    public void nextDriver(){
+
     }
 
     @Override

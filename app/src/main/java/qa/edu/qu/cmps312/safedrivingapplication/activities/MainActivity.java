@@ -21,6 +21,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -82,6 +84,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     GPSService mServer;
     GPSService.GPSBinder mGPSBinder;
     boolean mBounded;
+    String mBossKey;
+    ArrayList<String> mBossContacts;
+    ArrayList<String> mBossName;
     FusedLocationProviderClient mFusedLocationProviderClient;
     LocationRequest mLocationRequest;
     ServiceConnection mConnection = new ServiceConnection() {
@@ -173,7 +178,10 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
         sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
-
+        mBossKey = sharedPreferences.getString("BossKey","0");
+        mBossContacts = new ArrayList<>();
+        mBossName = new ArrayList<>();
+        refreshContacts();
         tempList = new ArrayList<>();
 
 
@@ -211,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             final String mPassword = pass;
             final String[] compareUser = {""};
             final String[] comparePass = {""};
-            DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+            final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
             myRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -222,17 +230,22 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         compareUser[0] = ds.getValue(User.class).getUserName();
                         comparePass[0] = ds.getValue(User.class).getPassword();
                         if (comparePass[0] != null && compareUser[0] != null) {
-                            if (mUsername.equals(compareUser[0].toString()) && mPassword.equals(comparePass[0].toString())) {
+                            if (mUsername.equals(compareUser[0]) && mPassword.equals(comparePass[0])) {
                                 //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                                 SharedPreferences.Editor e = sharedPreferences.edit();
                                 e.putString("fname", ds.getValue(User.class).getFirstName());
                                 e.putString("lname", ds.getValue(User.class).getLastName());
                                 e.putString("username", ds.getValue(User.class).getUserName());
+                                e.putString("type", ds.getValue(User.class).getType());
                                 if (ds.getValue(User.class).getUserCar() != null)
                                     e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
                                 e.putString("key", ds.getKey());
                                 e.commit();
                                 flag[0] = true;
+                                if(!mBossContacts.isEmpty()) // set boss contacts (drivers)
+                                    myRef.child(mBossKey).child("contacts").setValue(mBossContacts);
+                                if(!mBossName.isEmpty() && !ds.getKey().equals(mBossKey)) // set current user contact (boss)
+                                    myRef.child(sharedPreferences.getString("key","-1")).child("contacts").setValue(mBossName);
                             }
 
                             if (flag[0]) {
@@ -245,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                 Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
                             }
                         }
+
                     }
                 }
 
@@ -454,6 +468,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         newUser.setType(type);
         String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
         mDatabase.child("Drivers").child(key).setValue(newUser);
+        if(type.equals("Boss")) {
+            SharedPreferences.Editor e = sharedPreferences.edit();
+            e.putString("BossKey",key);
+            e.apply();
+        }
 
         LoginFragment loginFragment = new LoginFragment();
         getSupportFragmentManager().beginTransaction()
@@ -473,6 +492,29 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 .commit();
         mCurrentFragment = 0;
 
+    }
+
+    public void refreshContacts(){
+        final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mBossContacts.clear();
+                mBossName.clear();
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if(ds.getValue(User.class).getType().equals("Driver")){ // if a user is driver
+                        mBossContacts.add(ds.getValue(User.class).getUserName());
+                    }
+                    else
+                    mBossName.add(ds.getValue(User.class).getUserName());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public boolean isNotEmpty(String s) {

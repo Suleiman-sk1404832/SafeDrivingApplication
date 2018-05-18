@@ -16,6 +16,7 @@
     <string name="average_danger_driving_time_per_trip">Average danger driving time per trip:</string>
     <string name="back">Back</string>
     <string name="next">Next</string>
+    <string name="previous">Previous</string>
 
     <string-array name="types_array">
         <item>Driver</item>
