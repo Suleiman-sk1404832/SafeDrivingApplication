@@ -34,7 +34,6 @@ public class StatisticsFragment extends Fragment {
 
     StatisticsFragmentInterface statisticsFragmentInterface;
 
-    DatabaseReference mDatabase;
 
     SharedPreferences sharedPreferences;
 
@@ -89,13 +88,11 @@ public class StatisticsFragment extends Fragment {
             prevBtn.setVisibility(View.GONE);
         }
 
-        mTrip = null;
+        mTrip = new Trip();
         mDriversTrips = new ArrayList<>();
         mCurrentUsernames = new ArrayList<>();
         final boolean[] isShown = {false};
-        mDatabase = FirebaseDatabase.getInstance().getReference();
         DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
-
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

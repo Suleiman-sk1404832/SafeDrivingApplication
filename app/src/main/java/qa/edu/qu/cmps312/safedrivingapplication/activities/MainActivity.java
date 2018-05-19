@@ -163,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
         sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
-        mBossKey = sharedPreferences.getString("BossKey","0");
         mBossContacts = new ArrayList<>();
         mBossName = new ArrayList<>();
         refreshContacts();
@@ -191,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
-
                         compareUser[0] = ds.getValue(User.class).getUserName();
                         comparePass[0] = ds.getValue(User.class).getPassword();
                         if (comparePass[0] != null && compareUser[0] != null) {
@@ -201,11 +199,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                 e.putString("lname", ds.getValue(User.class).getLastName());
                                 e.putString("username", ds.getValue(User.class).getUserName());
                                 e.putString("type", ds.getValue(User.class).getType());
+                                e.putString("key", ds.getKey());
                                 if (ds.getValue(User.class).getUserCar() != null)
                                     e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
-                                e.putString("key", ds.getKey());
-                                e.commit();
+                                e.apply();
                                 flag[0] = true;
+                                mBossKey = sharedPreferences.getString("BossKey","NotBossKey");
                                 if(!mBossContacts.isEmpty()) // set boss contacts (drivers)
                                     myRef.child(mBossKey).child("contacts").setValue(mBossContacts);
                                 if(!mBossName.isEmpty() && !ds.getKey().equals(mBossKey)) // set current user contact (boss)
@@ -425,11 +424,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         newUser.setType(type);
         String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
         mDatabase.child("Drivers").child(key).setValue(newUser);
-        if(type.equals("Boss")) {
-            SharedPreferences.Editor e = sharedPreferences.edit();
-            e.putString("BossKey",key);
-            e.apply();
-        }
 
         LoginFragment loginFragment = new LoginFragment();
         getSupportFragmentManager().beginTransaction()
@@ -452,18 +446,21 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     }
 
     public void refreshContacts(){
-        final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+        DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                SharedPreferences.Editor e = sharedPreferences.edit();
                 mBossContacts.clear();
                 mBossName.clear();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    if (ds.getValue(User.class).getType() != null) {
-                        if (ds.getValue(User.class).getType().equals("Driver")) { // if a user is driver
-                            mBossContacts.add(ds.getValue(User.class).getUserName());
-                        } else
-                            mBossName.add(ds.getValue(User.class).getUserName());
+                    if(ds.getValue(User.class).getType().equals("Driver")){ // if a user is driver
+                        mBossContacts.add(ds.getValue(User.class).getUserName());
+                    }
+                    else {// a boss
+                        mBossName.add(ds.getValue(User.class).getUserName());
+                        e.putString("BossKey",ds.getKey()); // save his key
+                        e.apply();
                     }
                 }
             }
