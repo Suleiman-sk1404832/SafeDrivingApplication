@@ -409,6 +409,11 @@ public class GPSService extends Service {
         unregisterReceiver(mScreenOffStateReceiver);
         unregisterReceiver(mScreenOnStateReceiver);
 
+        saveTrip();
+
+    }
+
+    public void saveTrip(){
         if (getTotTripTimeInMin() >= 1) { // there was actually a trip!
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
             final Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
@@ -453,8 +458,9 @@ public class GPSService extends Service {
             Log.i("RESULTS", "Total Trip Time: " +getTotTripTimeInMin()+" Min \n"
                     +"Total Distance Traveled: "+getMileage()+" KM \n"
                     +"Average Speed: "+getTripAvgSpeed()+" KM/H \n"
-            +"Total Dangerous Driving Time: "+getTotDangerTimeInMin()+" Min");
+                    +"Total Dangerous Driving Time: "+getTotDangerTimeInMin()+" Min");
         }
+
     }
 
     @Override
