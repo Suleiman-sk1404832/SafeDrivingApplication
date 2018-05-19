@@ -424,6 +424,7 @@ public class GPSService extends Service {
                         myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
                     } else
                         trip.setNoOfTrips(dataSnapshot.getValue(User.class).getTrip().getNoOfTrips() + 1);
+                    //   trip.setTotDangerTimeInMin(dataSnapshot.getValue(User.class).getTrip().getTotDangerTimeInMin() + getTotDangerTimeInMin());
                     //TODO: add up rest of the values. ex: totalDistance+=newTotalDistance
                         myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
                 }
