@@ -92,7 +92,7 @@ public class StatisticsFragment extends Fragment {
         mTrip = null;
         mDriversTrips = new ArrayList<>();
         mCurrentUsernames = new ArrayList<>();
-        final boolean isShown = false;
+        final boolean[] isShown = {false};
         mDatabase = FirebaseDatabase.getInstance().getReference();
         DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
 
@@ -114,13 +114,13 @@ public class StatisticsFragment extends Fragment {
                             mCurrentUsername = ds.getValue(User.class).getUserName();
                             usernameTV.setText(mCurrentUsername);
                             noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mTrip.getNoOfTrips()));
-                            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mTrip.getTotDistanceTraveled()));
-                            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mTrip.getTotDangerTimeInMin()));
-                            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mTrip.getTotTimeInMin()));
-                            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f", mTrip.getAverageSpeed()));
-                            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mTrip.getAverageTimeInMin()));
-                            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mTrip.getAverageDistanceTraveled()));
-                            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mTrip.getAverageDangerousTimeInMin()));
+                            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mTrip.getTotDistanceTraveled()));
+                            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getTotDangerTimeInMin()));
+                            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getTotTimeInMin()));
+                            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mTrip.getTotAverageSpeed()));
+                            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getAverageTimeInMin()));
+                            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mTrip.getAverageDistanceTraveled()));
+                            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getAverageDangerousTimeInMin()));
                         }
                     }
                     else if(isBoss){ // not current user, but a boss is logged in, so we need others trip data
@@ -131,16 +131,17 @@ public class StatisticsFragment extends Fragment {
                         driverTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
                         mDriversTrips.add(driverTrip);
                         mCurrentUsernames.add(ds.getValue(User.class).getUserName());
-                        if(!isShown){ // show first driver data
+                        if(!isShown[0]){ // show first driver data
                             usernameTV.setText(mCurrentUsernames.get(0));
                             noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(0).getNoOfTrips()));
-                            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(0).getTotDistanceTraveled()));
-                            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(0).getTotDangerTimeInMin()));
-                            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(0).getTotTimeInMin()));
-                            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(0).getAverageSpeed()));
-                            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(0).getAverageTimeInMin()));
-                            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(0).getAverageDistanceTraveled()));
-                            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(0).getAverageDangerousTimeInMin()));
+                            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(0).getTotDistanceTraveled()));
+                            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getTotDangerTimeInMin()));
+                            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getTotTimeInMin()));
+                            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mDriversTrips.get(0).getTotAverageSpeed()));
+                            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getAverageTimeInMin()));
+                            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(0).getAverageDistanceTraveled()));
+                            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getAverageDangerousTimeInMin()));
+                            isShown[0] = true;
                         }
                     }
 
@@ -171,13 +172,13 @@ public class StatisticsFragment extends Fragment {
             ++mCurrentIndex;
             usernameTV.setText(mCurrentUsernames.get(mCurrentIndex));
             noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(mCurrentIndex).getNoOfTrips()));
-            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getTotDistanceTraveled()));
-            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getTotDangerTimeInMin()));
-            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getTotTimeInMin()));
-            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageSpeed()));
-            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageTimeInMin()));
-            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageDistanceTraveled()));
-            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageDangerousTimeInMin()));
+            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(mCurrentIndex).getTotDistanceTraveled()));
+            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getTotDangerTimeInMin()));
+            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getTotTimeInMin()));
+            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mDriversTrips.get(mCurrentIndex).getTotAverageSpeed()));
+            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getAverageTimeInMin()));
+            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(mCurrentIndex).getAverageDistanceTraveled()));
+            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getAverageDangerousTimeInMin()));
         }
     }
 
@@ -186,13 +187,13 @@ public class StatisticsFragment extends Fragment {
             --mCurrentIndex;
             usernameTV.setText(mCurrentUsernames.get(mCurrentIndex));
             noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(mCurrentIndex).getNoOfTrips()));
-            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getTotDistanceTraveled()));
-            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getTotDangerTimeInMin()));
-            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getTotTimeInMin()));
-            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageSpeed()));
-            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageTimeInMin()));
-            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageDistanceTraveled()));
-            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f", mDriversTrips.get(mCurrentIndex).getAverageDangerousTimeInMin()));
+            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(mCurrentIndex).getTotDistanceTraveled()));
+            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getTotDangerTimeInMin()));
+            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getTotTimeInMin()));
+            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mDriversTrips.get(mCurrentIndex).getTotAverageSpeed()));
+            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getAverageTimeInMin()));
+            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(mCurrentIndex).getAverageDistanceTraveled()));
+            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getAverageDangerousTimeInMin()));
         }
     }
 

@@ -412,21 +412,35 @@ public class GPSService extends Service {
         if (getTotTripTimeInMin() >= 1) { // there was actually a trip!
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
             final Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
-            //TODO: Add the statistics gathered in the trip class to the data already available in FireBase.
 
             final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
             myRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.getValue(User.class).getTrip() == null) {
-                        Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
+                    String currentUserKey = sharedPreferences.getString("key", "-1");
+                    if (dataSnapshot.getValue(User.class).getTrip() == null) { // first trip
                         trip.setNoOfTrips(1);
-                        myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
-                    } else
-                        trip.setNoOfTrips(dataSnapshot.getValue(User.class).getTrip().getNoOfTrips() + 1);
-                    //   trip.setTotDangerTimeInMin(dataSnapshot.getValue(User.class).getTrip().getTotDangerTimeInMin() + getTotDangerTimeInMin());
-                    //TODO: add up rest of the values. ex: totalDistance+=newTotalDistance
-                        myRef.child(sharedPreferences.getString("key", "-1")).child("Trip").setValue(trip);
+                    } else { // not first trip
+                        // obtain old trip data
+                        int noOfTrips = dataSnapshot.child(currentUserKey).getValue(User.class).getTrip().getNoOfTrips();
+                        float totTime = dataSnapshot.child(currentUserKey).getValue(User.class).getTrip().getTotTimeInMin();
+                        float totDangerTime = dataSnapshot.child(currentUserKey).getValue(User.class).getTrip().getTotDangerTimeInMin();
+                        float totDistance = dataSnapshot.child(currentUserKey).getValue(User.class).getTrip().getTotDistanceTraveled();
+                        float avgSpeed = dataSnapshot.child(currentUserKey).getValue(User.class).getTrip().getAvgSpeed();
+                        // add new trip info to it
+                        noOfTrips += 1;
+                        totTime += getTotTripTimeInMin();
+                        totDangerTime += getTotDangerTimeInMin();
+                        totDistance += getMileage();
+                        avgSpeed += getTripAvgSpeed();
+                        trip.setNoOfTrips(noOfTrips);
+                        trip.setTotTimeInMin(totTime);
+                        trip.setTotDangerTimeInMin(totDangerTime);
+                        trip.setTotDangerTimeInMin(totDistance);
+                        trip.setAvgSpeed(avgSpeed);
+                    }
+                    // save the new trip
+                    myRef.child(currentUserKey).child("Trip").setValue(trip);
                 }
 
                 @Override

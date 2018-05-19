@@ -50,7 +50,7 @@ public class Trip {
         this.totDistanceTraveled = totDistanceTraveled;
     }
 
-    public float getAvgSpeed() {
+    public float getAvgSpeed() { // called when adding speeds to accumulate
         return avgSpeed;
     }
 
@@ -73,8 +73,11 @@ public class Trip {
         return totDistanceTraveled/noOfTrips;
     }
 
-    public float getAverageSpeed(){
-        return avgSpeed/noOfTrips;
+    public float getTotAverageSpeed(){ // called when finally presenting the average speed of the driver trips, hence divided by number of trips
+        if(noOfTrips != 0)
+            return avgSpeed / noOfTrips;
+        else
+            return avgSpeed;
     }
 
 
