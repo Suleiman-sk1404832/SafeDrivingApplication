@@ -1,6 +1,8 @@
 package qa.edu.qu.cmps312.safedrivingapplication.fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,7 +17,7 @@ import qa.edu.qu.cmps312.safedrivingapplication.R;
 public class MainScreenFragment extends Fragment {
 
     MainScreenInterface mainScreenInterface;
-    Button mapsBtn, addCarBtn ,manageCarBtn, showStatsBtn;
+    Button mapsBtn, addCarBtn, manageCarBtn, showStatsBtn, logoutBtn;
 
     public MainScreenFragment() {
     }
@@ -29,8 +31,8 @@ public class MainScreenFragment extends Fragment {
         addCarBtn = rootView.findViewById(R.id.MaddCarBtn);
         manageCarBtn = rootView.findViewById(R.id.manageCar);
         showStatsBtn = rootView.findViewById(R.id.viewStats);
+        logoutBtn = rootView.findViewById(R.id.logOutBtn);
 
-        //This calls the method in main activity where you do work
         mapsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -41,6 +43,26 @@ public class MainScreenFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mainScreenInterface.openAddCars();
+            }
+        });
+        logoutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage("Are you sure?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // FIRE ZE MISSILES!
+                                mainScreenInterface.logOut();
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        });
+                // Create the AlertDialog object and return it
+                builder.create().show();
             }
         });
 
@@ -81,5 +103,7 @@ public class MainScreenFragment extends Fragment {
         void openManageCar();
 
         void showStats();
+
+        void logOut();
     }
 }

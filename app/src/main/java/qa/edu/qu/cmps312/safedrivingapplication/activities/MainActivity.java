@@ -89,21 +89,20 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         public void onServiceDisconnected(ComponentName name) {
             mServer = null;
             mBounded = false;
-            //Log.d("Binding", "Unbounded from service");
         }
     };
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt("currentFragment", mCurrentFragment);
-//        Log.i("SHOW", "onSaveIS() was called");
+
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-//        Log.i("SHOW", "onRestoreIS() was called");
+
         mCurrentFragment = savedInstanceState.getInt("currentFragment", 0);
         // remove the lingering login fragment, solution to login fragment showing behind other fragments
         getSupportFragmentManager().beginTransaction().remove(this.loginFragment).commit();
@@ -112,7 +111,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        Log.i("SHOW", "onCreate() was called");
         if (savedInstanceState != null) {
             mCurrentFragment = savedInstanceState.getInt("currentFragment", 0);
 
@@ -171,21 +169,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         refreshContacts();
         tempList = new ArrayList<>();
 
-
-        //TODO: Don't add these two again they are already in the firebase i will make the register do the work of adding tomorrow
-        //Random key
-        String key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
-        //Just assigning two drivers to test
-//        User d1 = new User("Suleiman","Kharroub","02/04/1997","soly","1234");
-//        mDatabase.child("Drivers").child(key).setValue(d1);
-//        key = FirebaseDatabase.getInstance().getReference("Drivers").push().getKey();
-//        User d2 = new User("Mohammad","Mohammad","18/03/1996","moh","1234");
-//        mDatabase.child("Drivers").child(key).setValue(d2);
-
-
-        //    find_weather();
         loginFragment = new LoginFragment();
-
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
@@ -194,10 +178,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     }
 
-
-
-    //Done with this -  Login Button Logic type user: soly - pass: 1234
-    //Test
     @Override
     public void login(String user, String pass) {
         if (isNotEmpty(user) && isNotEmpty(pass)) {
@@ -210,15 +190,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             myRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    // This method is called once with the initial value and again
-                    // whenever data at this location is updated.
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
                         compareUser[0] = ds.getValue(User.class).getUserName();
                         comparePass[0] = ds.getValue(User.class).getPassword();
                         if (comparePass[0] != null && compareUser[0] != null) {
                             if (mUsername.equals(compareUser[0]) && mPassword.equals(comparePass[0])) {
-                                //  Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                                 SharedPreferences.Editor e = sharedPreferences.edit();
                                 e.putString("fname", ds.getValue(User.class).getFirstName());
                                 e.putString("lname", ds.getValue(User.class).getLastName());
@@ -242,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                         .commit();
                                 mCurrentFragment = 1;
                             } else {
-                                Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
+                                // Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
                             }
                         }
 
@@ -253,16 +230,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 public void onCancelled(DatabaseError error) {
                     // Failed to read value
                 }
+
             });
 
 
         } else
             Toast.makeText(this, "Fill the fields", Toast.LENGTH_SHORT).show();
-        //TODO: For testing purpose - To be removed later.x
-        MainScreenFragment mainScreenFragment = new MainScreenFragment();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
-                .commit();
         mCurrentFragment = 1;
 
 
@@ -284,7 +257,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         boolean hasPermission = requestRuntimePermissions();
         if (!hasPermission) {
 
-            //open GPS service if not available
             mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
             createLocationRequest();
             mFusedLocationProviderClient.getLastLocation()
@@ -292,7 +264,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         @Override
                         public void onSuccess(Location location) {
                             mStartingLocation = location;
-                            //Toast.makeText(MainActivity.this, location.getLatitude()+","+location.getLongitude(), Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(MainActivity.this, GPSService.class);
                             startService(intent);
                             if (!mBounded)
@@ -303,13 +274,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                     .replace(R.id.main_Activity_frame_layout, mapFragment)
                                     .commit();
                             mCurrentFragment = 3;
-                            //  startActivity(new Intent(MainActivity.this, MapActivity.class));
 
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    //get User to enable location settings
                     Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
@@ -334,9 +303,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
             @Override
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                // All location settings are satisfied. The client can initialize
-                // location requests here.
-                // ...
+
             }
         });
 
@@ -344,16 +311,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             @Override
             public void onFailure(@NonNull Exception e) {
                 if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
-                    // by showing the user a dialog.
                     try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
                         ResolvableApiException resolvable = (ResolvableApiException) e;
                         resolvable.startResolutionForResult(MainActivity.this,
                                 REQUEST_CHECK_SETTINGS);
                     } catch (IntentSender.SendIntentException sendEx) {
-                        // Ignore the error.
                     }
                 }
             }
@@ -448,6 +410,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         mCurrentFragment = 6;
     }
 
+    @Override
+    public void logOut() {
+        LoginFragment loginFragment = new LoginFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, loginFragment)
+                .commit();
+    }
+
 
     @Override
     public void submit(String fname, String lname, String dateOfBirth, String username, String password, String type) {
@@ -489,11 +459,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 mBossContacts.clear();
                 mBossName.clear();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    if(ds.getValue(User.class).getType().equals("Driver")){ // if a user is driver
-                        mBossContacts.add(ds.getValue(User.class).getUserName());
+                    if (ds.getValue(User.class).getType() != null) {
+                        if (ds.getValue(User.class).getType().equals("Driver")) { // if a user is driver
+                            mBossContacts.add(ds.getValue(User.class).getUserName());
+                        } else
+                            mBossName.add(ds.getValue(User.class).getUserName());
                     }
-                    else
-                    mBossName.add(ds.getValue(User.class).getUserName());
                 }
             }
 

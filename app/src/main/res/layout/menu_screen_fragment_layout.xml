@@ -2,50 +2,56 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
     android:layout_centerHorizontal="true"
     android:layout_centerVertical="true"
     android:orientation="vertical"
-    >
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
 
     <Button
         android:id="@+id/MgoogleMapsBtn"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="138dp"
-        android:layout_height="80dp"
-        android:layout_marginTop="130dp"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="125dp"
-        android:text="Start trip"
-        />
+        android:layout_marginTop="130dp"
+        android:text="Start trip" />
 
     <Button
         android:id="@+id/MaddCarBtn"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="138dp"
         android:layout_height="80dp"
-        android:layout_marginTop="10dp"
         android:layout_marginLeft="125dp"
-        android:text="Add Car"
-        />
+        android:layout_marginTop="10dp"
+        android:text="Add Car" />
 
     <Button
         android:id="@+id/manageCar"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="138dp"
         android:layout_height="80dp"
-        android:layout_marginTop="10dp"
         android:layout_marginLeft="125dp"
-        android:text="Manage CAr"
-      />
+        android:layout_marginTop="10dp"
+        android:text="Manage CAr" />
 
     <Button
         android:id="@+id/viewStats"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="138dp"
         android:layout_height="80dp"
-        android:layout_marginTop="10dp"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="125dp"
-        android:text="Show Statistics"/>
+        android:layout_marginTop="10dp"
+        android:text="Show Statistics" />
+
+    <Button
+        android:id="@+id/logOutBtn"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="138dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="125dp"
+        android:layout_marginTop="10dp"
+        android:text="Logout" />
 </LinearLayout>
