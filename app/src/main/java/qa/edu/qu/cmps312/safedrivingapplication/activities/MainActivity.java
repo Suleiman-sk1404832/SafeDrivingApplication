@@ -211,7 +211,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                     myRef.child(sharedPreferences.getString("key","-1")).child("contacts").setValue(mBossName);
                             }
 
-                            if (flag[0]) {
+                            if (flag[0] && mCurrentFragment != 1) {
+
                                 MainScreenFragment mainScreenFragment = new MainScreenFragment();
                                 getSupportFragmentManager().beginTransaction()
                                         .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
@@ -235,9 +236,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
         } else
             Toast.makeText(this, "Fill the fields", Toast.LENGTH_SHORT).show();
-        mCurrentFragment = 1;
-
-
     }
 
     @Override
