@@ -36,6 +36,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Random;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
@@ -116,10 +118,9 @@ public class GPSService extends Service {
             Location prevLocation = null;
             @Override
             public void onLocationChanged(Location location) {
-                //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
+                /*float driverSpeed = ((Math.abs(new Random().nextFloat()%16)+20))*3.6f; //Simulation Code, add 16-26 speeds in m/s
+                Log.i("Results", "Speed: "+driverSpeed);*/
                 float driverSpeed = location.getSpeed()*KM_HOURS;
-
-                //TODO: Updating location of the current user.
 
                 myRef.child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
                 myRef.child(sharedPreferences.getString("key", "-1")).child("longitude").setValue(location.getLongitude());
@@ -282,9 +283,9 @@ public class GPSService extends Service {
 /*
                 mTotSpeed += driverSpeed; //Simulation Code
                 mSpeedCount+=1;
-                mTotDangerTime+= (Math.abs(new Random().nextLong()%2000))+8000; //Simulation Code, add 10 seconds.
+                mTotDangerTime+= (Math.abs(new Random().nextLong()%2))+8; //Simulation Code, add 2-10 seconds.
                 Log.i("Results", "Latest dangerous driving time in seconds: "
-                        +mTotDangerTime*0.001+'\n'+"Average speed in Km/H: "+(mTotSpeed/mSpeedCount));*/
+                        +mTotDangerTime+'\n'+"Average speed in Km/H: "+(mTotSpeed/mSpeedCount));*/
             }
 
             @Override
@@ -426,7 +427,7 @@ public class GPSService extends Service {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     String currentUserKey = sharedPreferences.getString("key", "-1");
-                    if (dataSnapshot.getValue(User.class).getTrip() == null) { // first trip
+                    if (dataSnapshot.child(currentUserKey).getValue(User.class).getTrip() == null) { // first trip
                         trip.setNoOfTrips(1);
                     } else { // not first trip
                         // obtain old trip data
@@ -449,6 +450,7 @@ public class GPSService extends Service {
                     }
                     // save the new trip
                     myRef.child(currentUserKey).child("Trip").setValue(trip);
+                    myRef.removeEventListener(this); // to not allow for anymore modification on the trip
                 }
 
                 @Override

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
+import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.models.User;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
 
@@ -92,7 +93,7 @@ public class StatisticsFragment extends Fragment {
         mDriversTrips = new ArrayList<>();
         mCurrentUsernames = new ArrayList<>();
         final boolean[] isShown = {false};
-        DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+        final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -120,29 +121,31 @@ public class StatisticsFragment extends Fragment {
                             averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getAverageDangerousTimeInMin()));
                         }
                     }
-                    else if(isBoss){ // not current user, but a boss is logged in, so we need others trip data
-                        Trip driverTrip = new Trip(ds.getValue(User.class).getTrip().getTotTimeInMin()
-                                ,ds.getValue(User.class).getTrip().getTotDangerTimeInMin()
-                                ,ds.getValue(User.class).getTrip().getAverageDistanceTraveled()
-                                ,ds.getValue(User.class).getTrip().getAvgSpeed());
-                        driverTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
-                        mDriversTrips.add(driverTrip);
-                        mCurrentUsernames.add(ds.getValue(User.class).getUserName());
-                        if(!isShown[0]){ // show first driver data
-                            usernameTV.setText(mCurrentUsernames.get(0));
-                            noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(0).getNoOfTrips()));
-                            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(0).getTotDistanceTraveled()));
-                            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getTotDangerTimeInMin()));
-                            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getTotTimeInMin()));
-                            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mDriversTrips.get(0).getTotAverageSpeed()));
-                            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getAverageTimeInMin()));
-                            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(0).getAverageDistanceTraveled()));
-                            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getAverageDangerousTimeInMin()));
-                            isShown[0] = true;
+                    else if(isBoss) { // not current user, but a boss is logged in, so we need others trip data
+                        if (ds.getValue(User.class).getTrip() != null) { // driver has a trip data
+                            Trip driverTrip = new Trip(ds.getValue(User.class).getTrip().getTotTimeInMin()
+                                    , ds.getValue(User.class).getTrip().getTotDangerTimeInMin()
+                                    , ds.getValue(User.class).getTrip().getAverageDistanceTraveled()
+                                    , ds.getValue(User.class).getTrip().getAvgSpeed());
+                            driverTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
+                            mDriversTrips.add(driverTrip);
+                            mCurrentUsernames.add(ds.getValue(User.class).getUserName());
+                            if (!isShown[0]) { // show first driver data
+                                usernameTV.setText(mCurrentUsernames.get(0));
+                                noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(0).getNoOfTrips()));
+                                totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(0).getTotDistanceTraveled()));
+                                totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getTotDangerTimeInMin()));
+                                totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getTotTimeInMin()));
+                                averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mDriversTrips.get(0).getTotAverageSpeed()));
+                                averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getAverageTimeInMin()));
+                                averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(0).getAverageDistanceTraveled()));
+                                averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getAverageDangerousTimeInMin()));
+                                isShown[0] = true;
+                            }
                         }
                     }
-
                 }
+                myRef.removeEventListener(this);
             }
 
 

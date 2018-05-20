@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     static final int REGISTER_CAR_REQUEST_CODE = 301;
     static final int PERMISSIONS_REQUEST_CODE = 22;
     public static Location mStartingLocation;
-    int mCurrentFragment;
+    public static int mCurrentFragmentIndex; // 0: Login, 1: MainScreen, 2: Register, 3: Map, 4: AddCar, 5:ManageCar, 6: Statistics
     LoginFragment loginFragment;
     ArrayList<Car> tempList;
     DatabaseReference mDatabase;
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt("currentFragment", mCurrentFragment);
+        outState.putInt("currentFragment", mCurrentFragmentIndex);
 
         super.onSaveInstanceState(outState);
     }
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        mCurrentFragment = savedInstanceState.getInt("currentFragment", 0);
+        mCurrentFragmentIndex = savedInstanceState.getInt("currentFragment", 0);
         // remove the lingering login fragment, solution to login fragment showing behind other fragments
         getSupportFragmentManager().beginTransaction().remove(this.loginFragment).commit();
     }
@@ -112,9 +112,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            mCurrentFragment = savedInstanceState.getInt("currentFragment", 0);
+            mCurrentFragmentIndex = savedInstanceState.getInt("currentFragment", 0);
 
-            switch (mCurrentFragment) {
+            switch (mCurrentFragmentIndex) {
                 case 0:
                     LoginFragment loginFragment = new LoginFragment();
                     getSupportFragmentManager().beginTransaction()
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
-        mCurrentFragment = 0;
+        mCurrentFragmentIndex = 0;
 
 
     }
@@ -189,42 +189,44 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
             myRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        compareUser[0] = ds.getValue(User.class).getUserName();
-                        comparePass[0] = ds.getValue(User.class).getPassword();
-                        if (comparePass[0] != null && compareUser[0] != null) {
-                            if (mUsername.equals(compareUser[0]) && mPassword.equals(comparePass[0])) {
-                                SharedPreferences.Editor e = sharedPreferences.edit();
-                                e.putString("fname", ds.getValue(User.class).getFirstName());
-                                e.putString("lname", ds.getValue(User.class).getLastName());
-                                e.putString("username", ds.getValue(User.class).getUserName());
-                                e.putString("type", ds.getValue(User.class).getType());
-                                e.putString("key", ds.getKey());
-                                if (ds.getValue(User.class).getUserCar() != null)
-                                    e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
-                                e.apply();
-                                flag[0] = true;
-                                mBossKey = sharedPreferences.getString("BossKey","NotBossKey");
-                                if(!mBossContacts.isEmpty()) // set boss contacts (drivers)
-                                    myRef.child(mBossKey).child("contacts").setValue(mBossContacts);
-                                if(!mBossName.isEmpty() && !ds.getKey().equals(mBossKey)) // set current user contact (boss)
-                                    myRef.child(sharedPreferences.getString("key","-1")).child("contacts").setValue(mBossName);
+                    if (mCurrentFragmentIndex == 0) { // only if inside login fragment
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                            compareUser[0] = ds.getValue(User.class).getUserName();
+                            comparePass[0] = ds.getValue(User.class).getPassword();
+                            if (comparePass[0] != null && compareUser[0] != null) {
+                                if (mUsername.equals(compareUser[0]) && mPassword.equals(comparePass[0])) {
+                                    SharedPreferences.Editor e = sharedPreferences.edit();
+                                    e.putString("fname", ds.getValue(User.class).getFirstName());
+                                    e.putString("lname", ds.getValue(User.class).getLastName());
+                                    e.putString("username", ds.getValue(User.class).getUserName());
+                                    e.putString("type", ds.getValue(User.class).getType());
+                                    e.putString("key", ds.getKey());
+                                    if (ds.getValue(User.class).getUserCar() != null)
+                                        e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
+                                    e.apply();
+                                    flag[0] = true;
+                                    mBossKey = sharedPreferences.getString("BossKey", "NotBossKey");
+                                    if (!mBossContacts.isEmpty()) // set boss contacts (drivers)
+                                        myRef.child(mBossKey).child("contacts").setValue(mBossContacts);
+                                    if (!mBossName.isEmpty() && !ds.getKey().equals(mBossKey)) // set current user contact (boss)
+                                        myRef.child(sharedPreferences.getString("key", "-1")).child("contacts").setValue(mBossName);
+                                }
+
+                                if (flag[0]) { // logged in
+                                    MainScreenFragment mainScreenFragment = new MainScreenFragment();
+                                    getSupportFragmentManager().beginTransaction()
+                                            .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                                            .commit();
+                                    mCurrentFragmentIndex = 1;
+                                    myRef.removeEventListener(this); // no need for it anymore
+                                } else {
+                                    // Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
+                                }
                             }
 
-                            if (flag[0] && mCurrentFragment != 1) {
-
-                                MainScreenFragment mainScreenFragment = new MainScreenFragment();
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
-                                        .commit();
-                                mCurrentFragment = 1;
-                            } else {
-                                // Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
-                            }
                         }
-
                     }
-                }
+            }
 
                 @Override
                 public void onCancelled(DatabaseError error) {
@@ -244,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, registerFragment)
                 .commit();
-        mCurrentFragment = 2;
+        mCurrentFragmentIndex = 2;
 
     }
 
@@ -270,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.main_Activity_frame_layout, mapFragment)
                                     .commit();
-                            mCurrentFragment = 3;
+                            mCurrentFragmentIndex = 3;
 
                         }
                     }).addOnFailureListener(new OnFailureListener() {
@@ -335,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
-        mCurrentFragment = 1;
+        mCurrentFragmentIndex = 1;
 
     }
 
@@ -368,7 +370,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     protected void onStart() {
         Intent intent = new Intent(this, GPSService.class);
         bindService(intent, mConnection, 0);
-//        Log.i("SHOW", "onStart() was called");
         super.onStart();
     }
 
@@ -377,7 +378,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         super.onStop();
         mBounded = false;
         unbindService(mConnection);
-//        Log.i("SHOW", "onStop() was called");
     }
 
     @Override
@@ -386,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, addCarFragment)
                 .commit();
-        mCurrentFragment = 4;
+        mCurrentFragmentIndex = 4;
     }
 
     @Override
@@ -395,7 +395,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, manageCarFragment)
                 .commit();
-        mCurrentFragment = 5;
+        mCurrentFragmentIndex = 5;
     }
 
     @Override
@@ -404,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, statisticsFragment)
                 .commit();
-        mCurrentFragment = 6;
+        mCurrentFragmentIndex = 6;
     }
 
     @Override
@@ -427,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
-        mCurrentFragment = 0;
+        mCurrentFragmentIndex = 0;
 
         Toast.makeText(this, "User Created ! Login now.", Toast.LENGTH_SHORT).show();
     }
@@ -439,28 +439,29 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
-        mCurrentFragment = 0;
+        mCurrentFragmentIndex = 0;
 
     }
 
     public void refreshContacts(){
-        DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+        final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                SharedPreferences.Editor e = sharedPreferences.edit();
-                mBossContacts.clear();
-                mBossName.clear();
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    if(ds.getKey().length() > 10)
-                    if(ds.getValue(User.class).getType().equals("Driver")){ // if a user is driver
-                        mBossContacts.add(ds.getValue(User.class).getUserName());
+                if (mCurrentFragmentIndex == 0) {// only if inside login fragment
+                    SharedPreferences.Editor e = sharedPreferences.edit();
+                    mBossContacts.clear();
+                    mBossName.clear();
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                            if (ds.getValue(User.class).getType().equals("Driver")) { // if a user is driver
+                                mBossContacts.add(ds.getValue(User.class).getUserName());
+                            } else {// a boss
+                                mBossName.add(ds.getValue(User.class).getUserName());
+                                e.putString("BossKey", ds.getKey()); // save his key
+                                e.apply();
+                            }
                     }
-                    else {// a boss
-                        mBossName.add(ds.getValue(User.class).getUserName());
-                        e.putString("BossKey",ds.getKey()); // save his key
-                        e.apply();
-                    }
+                    myRef.removeEventListener(this);
                 }
             }
 
@@ -480,7 +481,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     @Override
     protected void onDestroy() {
-//        Log.i("SHOW", "OnDestroy() was called");
         stopGPSService(-1); // if service is running, then service was forced to stop from activity, stop service with error flag
         super.onDestroy();
     }
@@ -491,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
-        mCurrentFragment = 1;
+        mCurrentFragmentIndex = 1;
 
         Toast.makeText(this, "You cancelled adding car", Toast.LENGTH_SHORT).show();
     }
@@ -510,7 +510,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
-        mCurrentFragment = 1;
+        mCurrentFragmentIndex = 1;
 
         Toast.makeText(this, "You cancelled managing car", Toast.LENGTH_SHORT).show();
     }
@@ -527,28 +527,28 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                 .commit();
-        mCurrentFragment = 1;
+        mCurrentFragmentIndex = 1;
     }
 
     private class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
-            if (mapFragment != null)
-                switch (msg.what) {
-                    case UPDATE_LOCATION: {
-                        Location location = ((Location) msg.obj);
-                        if (mCurrentFragment == 3)
+            if (mCurrentFragmentIndex == 3) {
+                GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
+                if (mapFragment != null)
+                    switch (msg.what) {
+                        case UPDATE_LOCATION: {
+                            Location location = ((Location) msg.obj);
                             mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-                        break;
+                            break;
+                        }
+                        case UPDATE_SPEED: {
+                            mapFragment.updateRoadSpeed((float) msg.obj);
+                            break;
+                        }
                     }
-                    case UPDATE_SPEED: {
-
-                        mapFragment.updateRoadSpeed((float) msg.obj);
-                        break;
-                    }
-                }
-            super.handleMessage(msg);
+                super.handleMessage(msg);
+            }
         }
 
 
