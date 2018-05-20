@@ -533,13 +533,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     private class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
             if (mapFragment != null)
                 switch (msg.what) {
                     case UPDATE_LOCATION: {
                         Location location = ((Location) msg.obj);
-                        if(mCurrentFragment == 3)
-                        mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+                        if (mCurrentFragment == 3)
+                            mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(), location.getLongitude()));
                         break;
                     }
                     case UPDATE_SPEED: {
@@ -550,6 +550,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 }
             super.handleMessage(msg);
         }
+
+
     }
 
 

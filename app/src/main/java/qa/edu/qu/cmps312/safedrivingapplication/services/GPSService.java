@@ -68,6 +68,7 @@ public class GPSService extends Service {
     float mTotDangerTime = 0;
     float mTotTripTime = 0;
     float mTotDistance = 0;
+    DatabaseReference myRef;
     BroadcastReceiver mScreenOffStateReceiver;
     BroadcastReceiver mScreenOnStateReceiver;
     boolean mScreenOn = true;
@@ -85,6 +86,8 @@ public class GPSService extends Service {
 
         createNotificationChannel();
         //mLocations = new ArrayList<>();
+
+        myRef = FirebaseDatabase.getInstance().getReference("Drivers");
 
         sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -117,9 +120,9 @@ public class GPSService extends Service {
                 float driverSpeed = location.getSpeed()*KM_HOURS;
 
                 //TODO: Updating location of the current user.
-                //DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
-                //myRef.child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
-                //myRef.child(sharedPreferences.getString("key", "-1")).child("longitude").setValue(location.getLongitude());
+
+                myRef.child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
+                myRef.child(sharedPreferences.getString("key", "-1")).child("longitude").setValue(location.getLongitude());
 
 
                 //uncomment to test..

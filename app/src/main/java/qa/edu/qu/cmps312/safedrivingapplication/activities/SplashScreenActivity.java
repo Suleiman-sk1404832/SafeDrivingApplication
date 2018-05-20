@@ -55,6 +55,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     public String find_weather() {
         String url = "http://api.openweathermap.org/data/2.5/weather?q=Doha&appid=67bc52ba2b975486cd69912aba06019c&units=Metric";
+        final String[] temp = {""};
         JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -71,16 +72,19 @@ public class SplashScreenActivity extends AppCompatActivity {
                             disc.setText("Weather is Clear and Dry roads a head!");
                             icon.setImageResource(R.drawable.clearskysplash);
                             e.putString("sky", "Clear");
+                            temp[0] = "Clear";
                             break;
                         case "Rain":
                             disc.setText("Weather is Rainy, sloppy roads a head!\n Be careful and drive safe! ");
                             icon.setImageResource(R.drawable.rainsplashscreen);
                             e.putString("sky", "Rain");
+                            temp[0] = "Rain";
                             break;
                         case "Dust":
                             disc.setText("Weather is Dusty, low visibility ahead!\n Be careful and drive safe! ");
                             icon.setImageResource(R.drawable.dust);
                             e.putString("sky", "Dust");
+                            temp[0] = "Dust";
                             break;
 
 
@@ -103,7 +107,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         queue.add(jor);
         queue.start();
 
-        return "finish";
+        return temp[0];
 
 
     }

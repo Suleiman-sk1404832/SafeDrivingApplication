@@ -16,6 +16,7 @@ public class Trip {
         this.totDangerTimeInMin = totDangerTimeInMin;
         this.totDistanceTraveled = totDistanceTraveled;
         this.avgSpeed = avgSpeed;
+        this.noOfTrips = 1;
     }
 
     public int getNoOfTrips() {

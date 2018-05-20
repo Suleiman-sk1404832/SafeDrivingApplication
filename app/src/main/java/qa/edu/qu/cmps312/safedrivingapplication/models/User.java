@@ -26,6 +26,9 @@ public class User {
         this.dateOfBirth = dateOfBirth;
         this.userName = userName;
         this.password = password;
+        this.longitude = 0.1;
+        this.latitude = 0.1;
+        this.type = "Driver";
     }
 
     public String getFirstName() {
