@@ -533,7 +533,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     private class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
+            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             if (mapFragment != null)
                 switch (msg.what) {
                     case UPDATE_LOCATION: {

@@ -61,6 +61,7 @@ public class GPSService extends Service {
     private static final int TOP_SPEED_LIMIT = 80; //km/h
     LocationManager mLocationManager;
     LocationListener mLocationListener;
+    DatabaseReference mDatabase;
     SharedPreferences sharedPreferences;
     float mTotSpeed = 0;
     float mSpeedCount = 0;
@@ -85,7 +86,8 @@ public class GPSService extends Service {
         createNotificationChannel();
         //mLocations = new ArrayList<>();
 
-        sharedPreferences = getApplicationContext().getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+        sharedPreferences = this.getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         mScreenOffStateReceiver = new BroadcastReceiver() {
             @Override
@@ -114,9 +116,11 @@ public class GPSService extends Service {
                 //float driverSpeed= ((Math.abs(new Random().nextFloat()%2)+20)*3.6f); //Simulation Code
                 float driverSpeed = location.getSpeed()*KM_HOURS;
 
-                DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
-                myRef.child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
-                myRef.child(sharedPreferences.getString("key", "-1")).child("longitude").setValue(location.getLongitude());
+                //TODO: Updating location of the current user.
+                //DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+                //myRef.child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
+                //myRef.child(sharedPreferences.getString("key", "-1")).child("longitude").setValue(location.getLongitude());
+
 
                 //uncomment to test..
                 //playSoundNotification(getApplicationContext());
