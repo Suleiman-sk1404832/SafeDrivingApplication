@@ -538,6 +538,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 switch (msg.what) {
                     case UPDATE_LOCATION: {
                         Location location = ((Location) msg.obj);
+                        if(mCurrentFragment == 3)
                         mapFragment.updateCurrentPosition(new LatLng(location.getLatitude(), location.getLongitude()));
                         break;
                     }
