@@ -454,6 +454,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                 mBossContacts.clear();
                 mBossName.clear();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if(ds.getKey().length() > 10)
                     if(ds.getValue(User.class).getType().equals("Driver")){ // if a user is driver
                         mBossContacts.add(ds.getValue(User.class).getUserName());
                     }
