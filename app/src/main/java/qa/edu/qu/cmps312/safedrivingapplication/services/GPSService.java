@@ -465,6 +465,8 @@ public class GPSService extends Service {
                     +"Average Speed: "+getTripAvgSpeed()+" KM/H \n"
                     +"Total Dangerous Driving Time: "+getTotDangerTimeInMin()+" Min");
         }
+        else
+            Toast.makeText(getApplicationContext(), "Trip is too short to save", Toast.LENGTH_LONG).show();
 
     }
 

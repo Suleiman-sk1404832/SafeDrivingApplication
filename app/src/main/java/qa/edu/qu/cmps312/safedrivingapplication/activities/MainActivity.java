@@ -203,6 +203,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                     e.putString("key", ds.getKey());
                                     if (ds.getValue(User.class).getUserCar() != null)
                                         e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
+                                    if (ds.getValue(User.class).getTrip() != null)
+                                        e.putBoolean("hasTrip",true);
                                     e.apply();
                                     flag[0] = true;
                                     mBossKey = sharedPreferences.getString("BossKey", "NotBossKey");
@@ -400,11 +402,17 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     @Override
     public void showStats() {
-        StatisticsFragment statisticsFragment = new StatisticsFragment();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_Activity_frame_layout, statisticsFragment)
-                .commit();
-        mCurrentFragmentIndex = 6;
+        boolean hasTrip = sharedPreferences.getBoolean("hasTrip",false);
+        boolean isBoss = sharedPreferences.getString("key","-1").equals(sharedPreferences.getString("BossKey","-1"));
+        if(hasTrip && !isBoss) { //not a boss and has trip data, open stats fragment
+            StatisticsFragment statisticsFragment = new StatisticsFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_Activity_frame_layout, statisticsFragment)
+                    .commit();
+            mCurrentFragmentIndex = 6;
+        }
+        else
+            Toast.makeText(this, "Please go for a ride first!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -413,6 +421,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, loginFragment)
                 .commit();
+        mCurrentFragmentIndex = 0;
     }
 
 
@@ -500,7 +509,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void submitCar(String make, String model, String year, String milage) {
         Car newCar = new Car(make, model, year, Integer.parseInt(milage));
         mDatabase.child("Drivers").child(sharedPreferences.getString("key", "-1")).child("userCar").setValue(newCar);
-
+        MainScreenFragment mainScreenFragment = new MainScreenFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                .commit();
+        mCurrentFragmentIndex = 1;
+        Toast.makeText(this, "Car added successfully",Toast.LENGTH_SHORT).show();
     }
 
 

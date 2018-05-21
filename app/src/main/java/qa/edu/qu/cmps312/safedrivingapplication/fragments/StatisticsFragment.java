@@ -99,26 +99,26 @@ public class StatisticsFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mDriversTrips.clear();
                 mCurrentUsernames.clear();
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
                 for (DataSnapshot ds : dataSnapshot.getChildren()) { // all users in db
                     if (ds.getKey().equals(sharedPreferences.getString("key", "-1"))) { // current user
-                        if (ds.getValue(User.class).getType().equals("Driver")) { // if current user is a driver, save his trip
-                            mTrip = new Trip(ds.getValue(User.class).getTrip().getTotTimeInMin()
-                                    ,ds.getValue(User.class).getTrip().getTotDangerTimeInMin()
-                                    ,ds.getValue(User.class).getTrip().getTotDistanceTraveled()
-                                    ,ds.getValue(User.class).getTrip().getAvgSpeed());
-                            mTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
-                            mCurrentUsername = ds.getValue(User.class).getUserName();
-                            usernameTV.setText(mCurrentUsername);
-                            noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mTrip.getNoOfTrips()));
-                            totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mTrip.getTotDistanceTraveled()));
-                            totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getTotDangerTimeInMin()));
-                            totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getTotTimeInMin()));
-                            averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mTrip.getTotAverageSpeed()));
-                            averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getAverageTimeInMin()));
-                            averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mTrip.getAverageDistanceTraveled()));
-                            averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getAverageDangerousTimeInMin()));
+                        if (ds.getValue(User.class).getType().equals("Driver")) { // current user is a driver, save his trip
+                            if (ds.getValue(User.class).getTrip() != null) { // driver has a trip data
+                                mTrip = new Trip(ds.getValue(User.class).getTrip().getTotTimeInMin()
+                                        , ds.getValue(User.class).getTrip().getTotDangerTimeInMin()
+                                        , ds.getValue(User.class).getTrip().getTotDistanceTraveled()
+                                        , ds.getValue(User.class).getTrip().getAvgSpeed());
+                                mTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
+                                mCurrentUsername = ds.getValue(User.class).getUserName();
+                                usernameTV.setText(mCurrentUsername);
+                                noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mTrip.getNoOfTrips()));
+                                totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mTrip.getTotDistanceTraveled()));
+                                totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getTotDangerTimeInMin()));
+                                totalTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getTotTimeInMin()));
+                                averageSpeedTV.setText(String.format(Locale.ENGLISH, "%.2f KM/H", mTrip.getTotAverageSpeed()));
+                                averageTimeTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getAverageTimeInMin()));
+                                averageDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mTrip.getAverageDistanceTraveled()));
+                                averageDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getAverageDangerousTimeInMin()));
+                            }
                         }
                     }
                     else if(isBoss) { // not current user, but a boss is logged in, so we need others trip data
