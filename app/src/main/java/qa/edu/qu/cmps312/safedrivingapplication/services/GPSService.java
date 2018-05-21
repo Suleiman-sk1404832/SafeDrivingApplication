@@ -54,7 +54,7 @@ public class GPSService extends Service {
     final static int NOTIFICATION_ID = 23;
     final static int SPEEDING1_NOTIFICATION_ID = 24;
     final static int SPEEDING2_NOTIFICATION_ID = 25;
-    final static String CHANNEL_ID = "notify_001";
+    final static String CHANNEL_ID = "notify_321";
     final static float KM_HOURS = 3.6f;
     private static final String TAG = "Client";
     private static final int SAFE_SPEED_LIMIT = 20; //km/h
