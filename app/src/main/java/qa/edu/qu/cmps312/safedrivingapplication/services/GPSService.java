@@ -270,7 +270,7 @@ public class GPSService extends Service {
                 }
 
                 if(prevLocation!=null) {
-                    mTotTripTime = prevLocation.getTime() - location.getTime();
+                    mTotTripTime += prevLocation.getTime() - location.getTime();
                 }
                 else {
                     prevLocation = location;
