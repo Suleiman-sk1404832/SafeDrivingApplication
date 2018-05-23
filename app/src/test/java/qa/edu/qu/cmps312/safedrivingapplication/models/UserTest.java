@@ -30,7 +30,7 @@ public class UserTest {
     }
 
     @Test
-    public void getLastName() throws Exception {
+    public void get666yyLastName() throws Exception {
         User user = new User("Suleiman", "Kayed", "20/08/2018", "soly", "123");
         String expected = "Kayed";
         String output = user.getLastName();
