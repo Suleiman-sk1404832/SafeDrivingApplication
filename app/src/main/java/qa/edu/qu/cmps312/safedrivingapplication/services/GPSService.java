@@ -118,8 +118,9 @@ public class GPSService extends Service {
             Location prevLocation = null;
             @Override
             public void onLocationChanged(Location location) {
-                /*float driverSpeed = ((Math.abs(new Random().nextFloat()%16)+20))*3.6f; //Simulation Code, add 16-26 speeds in m/s
-                Log.i("Results", "Speed: "+driverSpeed);*/
+               /* float driverSpeed = ((Math.abs(new Random().nextFloat()%16)+20)); //Simulation Code, add 16-26 speeds in m/s
+                Log.i("Results", "Speed: "+driverSpeed);
+                driverSpeed = driverSpeed*KM_HOURS;*/
                 float driverSpeed = location.getSpeed()*KM_HOURS;
 
                 myRef.child(sharedPreferences.getString("key", "-1")).child("latitude").setValue(location.getLatitude());
@@ -132,7 +133,7 @@ public class GPSService extends Service {
                 //notifyUser("100");
 
                 mTotSpeed += driverSpeed;
-                if(driverSpeed!= 0) // driver is not moving
+                if(driverSpeed!= 0) // driver is moving
                     mSpeedCount+=1;
 
                 //send location to map fragment to use on map
@@ -269,23 +270,37 @@ public class GPSService extends Service {
                     friendlyCounter = 0;
                 }
 
+                // end of control logic
+
+                float timeDifference;
+                float avgLocationSpeed;
                 if(prevLocation!=null) {
-                    mTotTripTime += prevLocation.getTime() - location.getTime();
+                    timeDifference = (location.getTime() - prevLocation.getTime());
+                    avgLocationSpeed = location.getSpeed()+prevLocation.getSpeed()/2; // average speed between two location captures.
+                    mTotTripTime += timeDifference;
                 }
                 else {
+                    timeDifference = 0;
+                    avgLocationSpeed = driverSpeed;
                     prevLocation = location;
                     mTotTripTime = 0;
                 }
-                // mTotDistance == Mileage,  in Kilo Meters
-                mTotDistance += driverSpeed* mTotTripTime;
-
+                // mTotDistance == Mileage,  in KM
+                mTotDistance += ((avgLocationSpeed/KM_HOURS) * (timeDifference/ONE_SEC)) / 1000;
+                Toast.makeText(getApplicationContext(), "time: "+timeDifference+
+                        "  speed: "+driverSpeed+"  distance: "
+                        +mTotDistance,Toast.LENGTH_LONG).show();
 
 /*
                 mTotSpeed += driverSpeed; //Simulation Code
                 mSpeedCount+=1;
-                mTotDangerTime+= (Math.abs(new Random().nextLong()%2))+8; //Simulation Code, add 2-10 seconds.
+//                mTotTripTime+= (Math.abs(new Random().nextLong()%2))+8; //Simulation Code, add 2-10 seconds.
+                mTotTripTime += 5; // add 5 seconds
+                mTotDistance = ((mTotSpeed/KM_HOURS) * (mTotTripTime)) / 1000;
                 Log.i("Results", "Latest dangerous driving time in seconds: "
-                        +mTotDangerTime+'\n'+"Average speed in Km/H: "+(mTotSpeed/mSpeedCount));*/
+                        +mTotTripTime+'\n'+"Average speed in Km/H: "+(mTotSpeed/mSpeedCount)+'\n'
+                +"Latest Distance Covered: "+(mTotSpeed/KM_HOURS)+"*"+mTotTripTime+'\n'
+                +"Total Distance Covered: "+mTotDistance+'\n');*/
             }
 
             @Override
