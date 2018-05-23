@@ -278,6 +278,7 @@ public class GPSService extends Service {
                     timeDifference = (location.getTime() - prevLocation.getTime());
                     avgLocationSpeed = location.getSpeed()+prevLocation.getSpeed()/2; // average speed between two location captures.
                     mTotTripTime += timeDifference;
+                    prevLocation = location;
                 }
                 else {
                     timeDifference = 0;
@@ -287,9 +288,10 @@ public class GPSService extends Service {
                 }
                 // mTotDistance == Mileage,  in KM
                 mTotDistance += ((avgLocationSpeed/KM_HOURS) * (timeDifference/ONE_SEC)) / 1000;
-                Toast.makeText(getApplicationContext(), "time: "+timeDifference+
-                        "  speed: "+driverSpeed+"  distance: "
-                        +mTotDistance,Toast.LENGTH_LONG).show();
+                //mTotDistance += location.distanceTo(prevLocation);
+                //Toast.makeText(getApplicationContext(), "time: "+timeDifference/ONE_SEC+
+                      //  "  speed: "+driverSpeed+"  distance: "
+                    //    +mTotDistance+" KM",Toast.LENGTH_LONG).show();
 
 /*
                 mTotSpeed += driverSpeed; //Simulation Code
@@ -435,15 +437,15 @@ public class GPSService extends Service {
     public void saveTrip(){
         if (getTotTripTimeInMin() >= 1) { // there was actually a trip!
             Toast.makeText(getApplicationContext(), "Driving Session Data Saved", Toast.LENGTH_LONG).show();
-            final Trip trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
 
             final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
             myRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    Trip trip;
                     String currentUserKey = sharedPreferences.getString("key", "-1");
                     if (dataSnapshot.child(currentUserKey).getValue(User.class).getTrip() == null) { // first trip
-                        trip.setNoOfTrips(1);
+                        trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
                     } else { // not first trip
                         // obtain old trip data
                         int noOfTrips = dataSnapshot.child(currentUserKey).getValue(User.class).getTrip().getNoOfTrips();
@@ -457,14 +459,11 @@ public class GPSService extends Service {
                         totDangerTime += getTotDangerTimeInMin();
                         totDistance += getMileage();
                         avgSpeed += getTripAvgSpeed();
+                        trip = new Trip(totTime, totDangerTime, totDistance, avgSpeed);
                         trip.setNoOfTrips(noOfTrips);
-                        trip.setTotTimeInMin(totTime);
-                        trip.setTotDangerTimeInMin(totDangerTime);
-                        trip.setTotDangerTimeInMin(totDistance);
-                        trip.setAvgSpeed(avgSpeed);
                     }
                     // save the new trip
-                    myRef.child(currentUserKey).child("Trip").setValue(trip);
+                    myRef.child(currentUserKey).child("trip").setValue(trip);
                     myRef.removeEventListener(this); // to not allow for anymore modification on the trip
                 }
 
