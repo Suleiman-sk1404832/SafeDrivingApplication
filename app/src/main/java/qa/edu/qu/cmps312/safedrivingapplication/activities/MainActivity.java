@@ -204,7 +204,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                     if (ds.getValue(User.class).getUserCar() != null)
                                         e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
                                     if (ds.getValue(User.class).getTrip() != null)
-                                        e.putBoolean("hasTrip",true);
+                                        e.putBoolean("hasTrip", true);
+                                    else
+                                        e.putBoolean("hasTrip", false);
                                     e.apply();
                                     flag[0] = true;
                                     mBossKey = sharedPreferences.getString("BossKey", "NotBossKey");
@@ -404,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void showStats() {
         boolean hasTrip = sharedPreferences.getBoolean("hasTrip",false);
         boolean isBoss = sharedPreferences.getString("key","-1").equals(sharedPreferences.getString("BossKey","-1"));
-        if(hasTrip && !isBoss) { //not a boss and has trip data, open stats fragment
+        if(hasTrip || isBoss) { //not a boss and has trip data, open stats fragment
             StatisticsFragment statisticsFragment = new StatisticsFragment();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.main_Activity_frame_layout, statisticsFragment)

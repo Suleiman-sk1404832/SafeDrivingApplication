@@ -464,6 +464,9 @@ public class GPSService extends Service {
                     }
                     // save the new trip
                     myRef.child(currentUserKey).child("trip").setValue(trip);
+                    SharedPreferences.Editor e = sharedPreferences.edit();
+                    e.putBoolean("hasTrip",true);
+                    e.apply();
                     myRef.removeEventListener(this); // to not allow for anymore modification on the trip
                 }
 
