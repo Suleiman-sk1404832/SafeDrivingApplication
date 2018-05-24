@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +47,7 @@ public class GMapFragment extends Fragment {
     SharedPreferences sharedPreferences;
     ArrayList<Marker> mDriversMarkers;
     int mCurrentIndex = 0;
+    boolean mIsBoss = false;
 
 
     public GMapFragment() {
@@ -54,7 +57,7 @@ public class GMapFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         sharedPreferences = getContext().getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
-        final boolean isBoss = sharedPreferences.getString("type", "NA").equals("Boss");
+        mIsBoss = sharedPreferences.getString("type", "NA").equals("Boss");
         if (MainActivity.mStartingLocation != null) {
             mCurrentPosition = new LatLng(MainActivity.mStartingLocation.getLatitude(), // set current position to user starting position
                     MainActivity.mStartingLocation.getLongitude());
@@ -69,7 +72,7 @@ public class GMapFragment extends Fragment {
         Button next_btn = rootView.findViewById(R.id.next_btn);
         Button prev_btn = rootView.findViewById(R.id.prev_btn);
         mSpeedLimit = rootView.findViewById(R.id.speed_limit);
-        if (!isBoss){
+        if (!mIsBoss){
             next_btn.setVisibility(View.GONE);
             prev_btn.setVisibility(View.GONE);
         }
@@ -114,7 +117,7 @@ public class GMapFragment extends Fragment {
                 @Override
                 public void onMapReady(GoogleMap googleMap) {
                     gMap = googleMap;
-                    if (isBoss) {
+                    if (mIsBoss) {
                         mDriversMarkers = new ArrayList<>();
                         for (int i = 0; i < MainActivity.mDriversPositions.size(); i++) { // all drivers positions
                             mDriversMarkers.add(gMap.addMarker(new MarkerOptions().position(MainActivity.mDriversPositions.get(i))
@@ -162,6 +165,12 @@ public class GMapFragment extends Fragment {
                 gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
                 gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
             }
+        }
+    }
+
+    public void updateDriversPosition(){
+        for (int i = 0; i < MainActivity.mDriversPositions.size(); i++) { // all drivers positions
+            mDriversMarkers.get(i).setPosition(MainActivity.mDriversPositions.get(i));
         }
     }
 

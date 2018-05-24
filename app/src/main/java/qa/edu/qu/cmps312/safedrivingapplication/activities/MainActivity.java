@@ -311,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                mDriversPositions.clear();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) // all users
                     if (ds.getValue(User.class).getType().equals("Driver")) { // driver
                         double lat = ds.getValue(User.class).getLatitude();
@@ -319,8 +320,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         String lName = ds.getValue(User.class).getLastName();
                         mDriversPositions.add(new LatLng(lat, lng));
                         mDriversFullNames.add(fName.concat(" " + lName));
+                        if(mCurrentFragmentIndex == 3){
+                            GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
+                            mapFragment.updateDriversPosition();
+                        }
                     }
-                myRef.removeEventListener(this);
             }
 
             @Override
