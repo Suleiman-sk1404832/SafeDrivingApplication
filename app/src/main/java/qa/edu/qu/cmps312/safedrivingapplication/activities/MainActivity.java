@@ -226,6 +226,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                     .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
                                     .commit();
                             mCurrentFragmentIndex = 1;
+                            if(sharedPreferences.getString("key", "-1").equals(mBossKey)){
+                                getDriversInfo();
+                            }
                         } else {
                             Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
                         }
@@ -293,7 +296,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
             }
         }else { // if boss go directly to map fragment
-            getDriversInfo();
             GMapFragment mapFragment = new GMapFragment();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.main_Activity_frame_layout, mapFragment)

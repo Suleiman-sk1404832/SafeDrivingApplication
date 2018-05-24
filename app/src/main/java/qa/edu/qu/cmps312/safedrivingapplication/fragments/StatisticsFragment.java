@@ -125,7 +125,7 @@ public class StatisticsFragment extends Fragment {
                         if (ds.getValue(User.class).getTrip() != null) { // driver has a trip data
                             Trip driverTrip = new Trip(ds.getValue(User.class).getTrip().getTotTimeInMin()
                                     , ds.getValue(User.class).getTrip().getTotDangerTimeInMin()
-                                    , ds.getValue(User.class).getTrip().getAverageDistanceTraveled()
+                                    , ds.getValue(User.class).getTrip().getTotDistanceTraveled()
                                     , ds.getValue(User.class).getTrip().getAvgSpeed());
                             driverTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
                             mDriversTrips.add(driverTrip);
