@@ -2,6 +2,7 @@ package qa.edu.qu.cmps312.safedrivingapplication.fragments;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -21,8 +22,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by Mohamad Alsokromy on 3/1/2018.
@@ -37,57 +42,100 @@ public class GMapFragment extends Fragment {
     TextView mSpeedLimit;
     Marker mUserMarker;
     private boolean mIsDefaultPosition = false;
+    SharedPreferences sharedPreferences;
+    ArrayList<Marker> mDriversMarkers;
+    int mCurrentIndex = 0;
 
-    public GMapFragment(){}
+
+    public GMapFragment() {
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        if(MainActivity.mStartingLocation != null) {
+        sharedPreferences = getContext().getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+        final boolean isBoss = sharedPreferences.getString("type", "NA").equals("Boss");
+        if (MainActivity.mStartingLocation != null) {
             mCurrentPosition = new LatLng(MainActivity.mStartingLocation.getLatitude(), // set current position to user starting position
                     MainActivity.mStartingLocation.getLongitude());
-        }
-        else{
-            mCurrentPosition = new LatLng(25.3028,51.489);
+        } else {
+            mCurrentPosition = new LatLng(25.3028, 51.489);
             mIsDefaultPosition = true;
         }
-       View rootView = inflater.inflate(R.layout.map_activity_layout, container, false);
+        View rootView = inflater.inflate(R.layout.map_activity_layout, container, false);
 
-       Button stop_btn = rootView.findViewById(R.id.stop_btn);
-       Button relocate_btn = rootView.findViewById(R.id.relocate_btn);
-       mSpeedLimit = rootView.findViewById(R.id.speed_limit);
-       stop_btn.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               mMapInterface.stopGPSService(0);
-           }
-       });
-       relocate_btn.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
-               gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-           }
-       });
+        Button stop_btn = rootView.findViewById(R.id.stop_btn);
+        Button relocate_btn = rootView.findViewById(R.id.relocate_btn);
+        Button next_btn = rootView.findViewById(R.id.next_btn);
+        Button prev_btn = rootView.findViewById(R.id.prev_btn);
+        mSpeedLimit = rootView.findViewById(R.id.speed_limit);
+        if (!isBoss){
+            next_btn.setVisibility(View.GONE);
+            prev_btn.setVisibility(View.GONE);
+        }
+        else
+            relocate_btn.setVisibility(View.GONE);
+        stop_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mMapInterface.stopGPSService(0);
+            }
+        });
+        relocate_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
+                gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            }
+        });
+        next_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCurrentIndex != mDriversMarkers.size()-1) {
+                    gMap.moveCamera(CameraUpdateFactory.newLatLng(MainActivity.mDriversPositions.get(++mCurrentIndex)));
+//                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                }
+            }
+        });
+        prev_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCurrentIndex != 0) {
+                    gMap.moveCamera(CameraUpdateFactory.newLatLng(MainActivity.mDriversPositions.get(--mCurrentIndex)));
+//                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                }
+            }
+        });
 
-       if (mMapFragment == null){
-           mMapFragment = SupportMapFragment.newInstance();
-           mMapFragment.getMapAsync(new OnMapReadyCallback() {
-               @Override
-               public void onMapReady(GoogleMap googleMap) {
-                   gMap = googleMap;
+        if (mMapFragment == null) {
 
-                   mUserMarker = gMap.addMarker(new MarkerOptions().position(mCurrentPosition)
-                           .title("Current Location")
-                           .icon(BitmapDescriptorFactory.fromResource(R.drawable.car2)));
-                   gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
-                   gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-               }
-           });
-       }
-       getFragmentManager().beginTransaction().replace(R.id.map, mMapFragment).commit();
+            mMapFragment = SupportMapFragment.newInstance();
+            mMapFragment.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                    gMap = googleMap;
+                    if (isBoss) {
+                        mDriversMarkers = new ArrayList<>();
+                        for (int i = 0; i < MainActivity.mDriversPositions.size(); i++) { // all drivers positions
+                            mDriversMarkers.add(gMap.addMarker(new MarkerOptions().position(MainActivity.mDriversPositions.get(i))
+                                    .title(MainActivity.mDriversFullNames.get(i))
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.car2))));
+                        }
+                        gMap.moveCamera(CameraUpdateFactory.newLatLng(MainActivity.mDriversPositions.get(0)));
+                        gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                    } else { // a driver
+                        mUserMarker = gMap.addMarker(new MarkerOptions().position(mCurrentPosition)
+                                .title("Current Location")
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car2)));
+                        gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
+                        gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                    }
+                }
+            });
+        }
+        getFragmentManager().beginTransaction().replace(R.id.map, mMapFragment).commit();
 
-       return rootView;
+        return rootView;
     }
 
     @Override
@@ -107,10 +155,10 @@ public class GMapFragment extends Fragment {
     }
 
     public void updateCurrentPosition(LatLng currentPosition) {
-        if(gMap!= null) {
+        if (gMap != null) {
             this.mCurrentPosition = currentPosition;
             mUserMarker.setPosition(currentPosition);
-            if(mIsDefaultPosition) {
+            if (mIsDefaultPosition) {
                 gMap.moveCamera(CameraUpdateFactory.newLatLng(mCurrentPosition));
                 gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
             }

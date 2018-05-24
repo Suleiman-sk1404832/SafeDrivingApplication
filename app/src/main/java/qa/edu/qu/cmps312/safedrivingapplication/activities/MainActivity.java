@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -74,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     String mBossKey;
     ArrayList<String> mBossContacts;
     ArrayList<String> mBossName;
+    public static ArrayList<LatLng> mDriversPositions;
+    public static ArrayList<String> mDriversFullNames;
     FusedLocationProviderClient mFusedLocationProviderClient;
     LocationRequest mLocationRequest;
     ServiceConnection mConnection = new ServiceConnection() {
@@ -257,38 +260,76 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     @SuppressLint("MissingPermission")
     @Override
     public void openMaps() {
-        boolean hasPermission = requestRuntimePermissions();
-        if (!hasPermission) {
+        boolean isBoss = sharedPreferences.getString("key","-1").equals(sharedPreferences.getString("BossKey","-1"));
+        if(!isBoss) {
+            boolean hasPermission = requestRuntimePermissions();
+            if (!hasPermission) {
 
-            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-            createLocationRequest();
-            mFusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            mStartingLocation = location;
-                            Intent intent = new Intent(MainActivity.this, GPSService.class);
-                            startService(intent);
-                            if (!mBounded)
-                                bindService(intent, mConnection, 0);
+                mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                createLocationRequest();
+                mFusedLocationProviderClient.getLastLocation()
+                        .addOnSuccessListener(new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                mStartingLocation = location;
+                                Intent intent = new Intent(MainActivity.this, GPSService.class);
+                                startService(intent);
+                                if (!mBounded)
+                                    bindService(intent, mConnection, 0);
 
-                            GMapFragment mapFragment = new GMapFragment();
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.main_Activity_frame_layout, mapFragment)
-                                    .commit();
-                            mCurrentFragmentIndex = 3;
+                                GMapFragment mapFragment = new GMapFragment();
+                                getSupportFragmentManager().beginTransaction()
+                                        .replace(R.id.main_Activity_frame_layout, mapFragment)
+                                        .commit();
+                                mCurrentFragmentIndex = 3;
 
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                }
-            });
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+                });
 
+            }
+        }else { // if boss go directly to map fragment
+            getDriversInfo();
+            GMapFragment mapFragment = new GMapFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.main_Activity_frame_layout, mapFragment)
+                    .commit();
+            mCurrentFragmentIndex = 3;
         }
+    }
+
+    public void getDriversInfo() {
+        mDriversPositions = new ArrayList<>();
+        mDriversFullNames = new ArrayList<>();
+        final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) // all users
+                    if (ds.getValue(User.class).getType().equals("Driver")) { // driver
+                        double lat = ds.getValue(User.class).getLatitude();
+                        double lng = ds.getValue(User.class).getLongitude();
+                        String fName = ds.getValue(User.class).getFirstName();
+                        String lName = ds.getValue(User.class).getLastName();
+                        mDriversPositions.add(new LatLng(lat, lng));
+                        mDriversFullNames.add(fName.concat(" " + lName));
+                        Log.i("FULL_NAME & POSITION","Name: "+mDriversFullNames.get(mDriversFullNames.size()-1)
+                                +"   Position: "+mDriversPositions.get(mDriversPositions.size()-1));
+                    }
+                myRef.removeEventListener(this);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     protected void createLocationRequest() {

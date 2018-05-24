@@ -156,6 +156,13 @@ public class GPSService extends Service {
                     //new OSMIdTask().execute(URL1+"&lat="+location.getLatitude()+"&lon="+location.getLongitude());
                 }*/
 
+                //start of control logic
+                /*
+                    Dangerous Driving is:
+                        -Phone Off and 80++ KM/H
+                        -Phone On and 10++ KM/H
+                 */
+
                 if(driverSpeed > TOP_SPEED_LIMIT && mScreenOn ) {
                     // above 80 KM/H and screen is on, VERY DANGEROUS, play sound intensively
                     if(isFirstTimeAboveLimit) { // if first time going above speed limit

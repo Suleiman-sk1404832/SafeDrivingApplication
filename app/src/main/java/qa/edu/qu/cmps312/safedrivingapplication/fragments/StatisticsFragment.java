@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
-import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.models.User;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
 
@@ -38,15 +37,16 @@ public class StatisticsFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
 
-    String mCurrentUsername;
-    ArrayList<String> mCurrentUsernames;
+    String mCurrentUserFName;
+    ArrayList<String> mDriversFName;
     int mCurrentIndex = 0;
     Trip mTrip;
     ArrayList<Trip> mDriversTrips;
 
-    TextView usernameTV, noOfTripTV, totalDistanceTV, totalDangerTV, totalTimeTV,
+    TextView userFNameTV, noOfTripTV, totalDistanceTV, totalDangerTV, totalTimeTV,
             averageDistanceTV,averageDangerTV, averageTimeTV,averageSpeedTV;
     Button backBtn, nxtBtn, prevBtn;
+
     public StatisticsFragment(){
 
     }
@@ -72,7 +72,7 @@ public class StatisticsFragment extends Fragment {
             }
         });
 
-        usernameTV = rootView.findViewById(R.id.usernameTV);
+        userFNameTV = rootView.findViewById(R.id.usernameTV);
         noOfTripTV = rootView.findViewById(R.id.noOfTripsTV);
         totalDistanceTV = rootView.findViewById(R.id.totalDistanceTravelledTV);
         totalDangerTV = rootView.findViewById(R.id.totalDangerousTimeTV);
@@ -83,7 +83,7 @@ public class StatisticsFragment extends Fragment {
         averageTimeTV = rootView.findViewById(R.id.AverageTimePerTripTV);
 
         sharedPreferences = getContext().getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
-        final Boolean isBoss = sharedPreferences.getString("type","0").equals("Boss");
+        final Boolean isBoss = sharedPreferences.getString("type","NA").equals("Boss");
         if(!isBoss) { // if a driver
             nxtBtn.setVisibility(View.GONE);
             prevBtn.setVisibility(View.GONE);
@@ -91,14 +91,14 @@ public class StatisticsFragment extends Fragment {
 
         mTrip = new Trip();
         mDriversTrips = new ArrayList<>();
-        mCurrentUsernames = new ArrayList<>();
+        mDriversFName = new ArrayList<>();
         final boolean[] isShown = {false};
         final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mDriversTrips.clear();
-                mCurrentUsernames.clear();
+                mDriversFName.clear();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) { // all users in db
                     if (ds.getKey().equals(sharedPreferences.getString("key", "-1"))) { // current user
                         if (ds.getValue(User.class).getType().equals("Driver")) { // current user is a driver, save his trip
@@ -108,8 +108,8 @@ public class StatisticsFragment extends Fragment {
                                         , ds.getValue(User.class).getTrip().getTotDistanceTraveled()
                                         , ds.getValue(User.class).getTrip().getAvgSpeed());
                                 mTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
-                                mCurrentUsername = ds.getValue(User.class).getUserName();
-                                usernameTV.setText(mCurrentUsername);
+                                mCurrentUserFName = ds.getValue(User.class).getFirstName().concat(" "+ds.getValue(User.class).getLastName());
+                                userFNameTV.setText(mCurrentUserFName);
                                 noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mTrip.getNoOfTrips()));
                                 totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mTrip.getTotDistanceTraveled()));
                                 totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mTrip.getTotDangerTimeInMin()));
@@ -129,9 +129,9 @@ public class StatisticsFragment extends Fragment {
                                     , ds.getValue(User.class).getTrip().getAvgSpeed());
                             driverTrip.setNoOfTrips(ds.getValue(User.class).getTrip().getNoOfTrips());
                             mDriversTrips.add(driverTrip);
-                            mCurrentUsernames.add(ds.getValue(User.class).getUserName());
+                            mDriversFName.add(ds.getValue(User.class).getFirstName().concat(" "+ds.getValue(User.class).getLastName()));
                             if (!isShown[0]) { // show first driver data
-                                usernameTV.setText(mCurrentUsernames.get(0));
+                                userFNameTV.setText(mDriversFName.get(0));
                                 noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(0).getNoOfTrips()));
                                 totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(0).getTotDistanceTraveled()));
                                 totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(0).getTotDangerTimeInMin()));
@@ -168,9 +168,9 @@ public class StatisticsFragment extends Fragment {
     }
 
     public void showNextStats(){
-        if (mCurrentIndex != mCurrentUsernames.size()-1) {
+        if (mCurrentIndex != mDriversFName.size()-1) {
             ++mCurrentIndex;
-            usernameTV.setText(mCurrentUsernames.get(mCurrentIndex));
+            userFNameTV.setText(mDriversFName.get(mCurrentIndex));
             noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(mCurrentIndex).getNoOfTrips()));
             totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(mCurrentIndex).getTotDistanceTraveled()));
             totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getTotDangerTimeInMin()));
@@ -185,7 +185,7 @@ public class StatisticsFragment extends Fragment {
     public void showPreviousStats(){
         if (mCurrentIndex != 0) {
             --mCurrentIndex;
-            usernameTV.setText(mCurrentUsernames.get(mCurrentIndex));
+            userFNameTV.setText(mDriversFName.get(mCurrentIndex));
             noOfTripTV.setText(String.format(Locale.ENGLISH, "%d", mDriversTrips.get(mCurrentIndex).getNoOfTrips()));
             totalDistanceTV.setText(String.format(Locale.ENGLISH, "%.2f KM", mDriversTrips.get(mCurrentIndex).getTotDistanceTraveled()));
             totalDangerTV.setText(String.format(Locale.ENGLISH, "%.2f Min", mDriversTrips.get(mCurrentIndex).getTotDangerTimeInMin()));
