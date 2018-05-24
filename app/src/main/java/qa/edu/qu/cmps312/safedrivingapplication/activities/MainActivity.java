@@ -20,7 +20,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -217,21 +216,20 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                         myRef.child(mBossKey).child("contacts").setValue(mBossContacts);
                                     if (!mBossName.isEmpty() && !ds.getKey().equals(mBossKey)) // set current user contact (boss)
                                         myRef.child(sharedPreferences.getString("key", "-1")).child("contacts").setValue(mBossName);
-                                }
-
-                                if (flag[0]) { // logged in
-                                    MainScreenFragment mainScreenFragment = new MainScreenFragment();
-                                    getSupportFragmentManager().beginTransaction()
-                                            .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
-                                            .commit();
-                                    mCurrentFragmentIndex = 1;
-                                    myRef.removeEventListener(this); // no need for it anymore
-                                } else {
-                                    // Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
+                                    break;
                                 }
                             }
-
                         }
+                        if (flag[0]) { // logged in
+                            MainScreenFragment mainScreenFragment = new MainScreenFragment();
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.main_Activity_frame_layout, mainScreenFragment)
+                                    .commit();
+                            mCurrentFragmentIndex = 1;
+                        } else {
+                            Toast.makeText(MainActivity.this, "Cannot find user", Toast.LENGTH_SHORT).show();
+                        }
+                        myRef.removeEventListener(this); // no need for it anymore
                     }
             }
 
@@ -319,8 +317,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         String lName = ds.getValue(User.class).getLastName();
                         mDriversPositions.add(new LatLng(lat, lng));
                         mDriversFullNames.add(fName.concat(" " + lName));
-                        Log.i("FULL_NAME & POSITION","Name: "+mDriversFullNames.get(mDriversFullNames.size()-1)
-                                +"   Position: "+mDriversPositions.get(mDriversPositions.size()-1));
                     }
                 myRef.removeEventListener(this);
             }
