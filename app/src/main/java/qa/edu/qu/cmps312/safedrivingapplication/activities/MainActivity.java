@@ -307,6 +307,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     public void getDriversInfo() {
         mDriversPositions = new ArrayList<>();
         mDriversFullNames = new ArrayList<>();
+        final boolean isBoss = sharedPreferences.getString("key","-1").equals(sharedPreferences.getString("BossKey","-1"));
         final DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Drivers");
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -320,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                         String lName = ds.getValue(User.class).getLastName();
                         mDriversPositions.add(new LatLng(lat, lng));
                         mDriversFullNames.add(fName.concat(" " + lName));
-                        if(mCurrentFragmentIndex == 3){
+                        if(mCurrentFragmentIndex == 3 && isBoss){
                             GMapFragment mapFragment = (GMapFragment) getSupportFragmentManager().findFragmentById(R.id.main_Activity_frame_layout);
                             mapFragment.updateDriversPosition();
                         }

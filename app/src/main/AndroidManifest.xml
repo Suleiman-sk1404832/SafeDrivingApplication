@@ -18,7 +18,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyAOYbw61vrrEgutn6UwvVNCik8O3G5miag  " />
+            android:value="AIzaSyBscknvhnT_oat39yS9Tqu6h3uX-7WS2tU" />
 
         <activity android:name=".activities.SplashScreenActivity">
             <intent-filter>

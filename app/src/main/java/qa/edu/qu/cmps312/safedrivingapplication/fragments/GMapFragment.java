@@ -111,7 +111,6 @@ public class GMapFragment extends Fragment {
         });
 
         if (mMapFragment == null) {
-
             mMapFragment = SupportMapFragment.newInstance();
             mMapFragment.getMapAsync(new OnMapReadyCallback() {
                 @Override
@@ -137,7 +136,6 @@ public class GMapFragment extends Fragment {
             });
         }
         getFragmentManager().beginTransaction().replace(R.id.map, mMapFragment).commit();
-
         return rootView;
     }
 
