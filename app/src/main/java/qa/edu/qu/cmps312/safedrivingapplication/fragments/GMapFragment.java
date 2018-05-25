@@ -72,11 +72,10 @@ public class GMapFragment extends Fragment {
         Button next_btn = rootView.findViewById(R.id.next_btn);
         Button prev_btn = rootView.findViewById(R.id.prev_btn);
         mSpeedLimit = rootView.findViewById(R.id.speed_limit);
-        if (!mIsBoss){
+        if (!mIsBoss) {
             next_btn.setVisibility(View.GONE);
             prev_btn.setVisibility(View.GONE);
-        }
-        else
+        } else
             relocate_btn.setVisibility(View.GONE);
         stop_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,7 +93,7 @@ public class GMapFragment extends Fragment {
         next_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mCurrentIndex != mDriversMarkers.size()-1) {
+                if (mCurrentIndex != mDriversMarkers.size() - 1) {
                     gMap.moveCamera(CameraUpdateFactory.newLatLng(MainActivity.mDriversPositions.get(++mCurrentIndex)));
 //                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 }
@@ -166,9 +165,10 @@ public class GMapFragment extends Fragment {
         }
     }
 
-    public void updateDriversPosition(){
+    public void updateDriversPosition() {
         for (int i = 0; i < MainActivity.mDriversPositions.size(); i++) { // all drivers positions
-            mDriversMarkers.get(i).setPosition(MainActivity.mDriversPositions.get(i));
+            if (mDriversMarkers != null)
+                mDriversMarkers.get(i).setPosition(MainActivity.mDriversPositions.get(i));
         }
     }
 
