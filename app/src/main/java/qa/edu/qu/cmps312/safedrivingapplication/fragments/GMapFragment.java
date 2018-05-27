@@ -95,7 +95,7 @@ public class GMapFragment extends Fragment {
             public void onClick(View view) {
                 if (mCurrentIndex != mDriversMarkers.size() - 1) {
                     gMap.moveCamera(CameraUpdateFactory.newLatLng(MainActivity.mDriversPositions.get(++mCurrentIndex)));
-//                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 }
             }
         });
@@ -104,7 +104,7 @@ public class GMapFragment extends Fragment {
             public void onClick(View view) {
                 if (mCurrentIndex != 0) {
                     gMap.moveCamera(CameraUpdateFactory.newLatLng(MainActivity.mDriversPositions.get(--mCurrentIndex)));
-//                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                    gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 }
             }
         });
@@ -166,9 +166,10 @@ public class GMapFragment extends Fragment {
     }
 
     public void updateDriversPosition() {
-        for (int i = 0; i < MainActivity.mDriversPositions.size(); i++) { // all drivers positions
-            if (mDriversMarkers != null)
+        if (mDriversMarkers != null) {
+            for (int i = 0; i < MainActivity.mDriversPositions.size(); i++) // all drivers positions
                 mDriversMarkers.get(i).setPosition(MainActivity.mDriversPositions.get(i));
+            gMap.moveCamera(CameraUpdateFactory.newLatLng(mDriversMarkers.get(mCurrentIndex).getPosition()));
         }
     }
 
