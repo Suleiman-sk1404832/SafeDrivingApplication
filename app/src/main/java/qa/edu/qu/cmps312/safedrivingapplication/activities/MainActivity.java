@@ -208,6 +208,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                         e.putString("make", ds.getValue(User.class).getUserCar().getMake());
                                         e.putString("model", ds.getValue(User.class).getUserCar().getModel());
                                         e.putString("year", ds.getValue(User.class).getUserCar().getYear());
+                                    } else {
+                                        e.putInt("mileage", 0);
+                                        e.putString("make", "");
+                                        e.putString("model", "");
+                                        e.putString("year", "");
                                     }
                                     if (ds.getValue(User.class).getTrip() != null)
                                         e.putBoolean("hasTrip", true);
@@ -467,6 +472,18 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
 
     @Override
     public void logOut() {
+        SharedPreferences.Editor e = sharedPreferences.edit();
+        e.putString("fname", "");
+        e.putString("lname", "");
+        e.putString("username", "");
+        e.putString("type", "");
+        e.putString("key", "");
+
+        e.putInt("mileage", 0);
+        e.putString("make", "");
+        e.putString("model", "");
+        e.putString("year", "");
+        e.apply();
         LoginFragment loginFragment = new LoginFragment();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_Activity_frame_layout, loginFragment)
