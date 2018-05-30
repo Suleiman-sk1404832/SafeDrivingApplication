@@ -36,8 +36,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Random;
-
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
@@ -212,7 +210,7 @@ public class GPSService extends Service {
                     // above 60 KM/H and screen is off, SAFE
                     if(!isFirstTimeAboveLimit){
                         endTime = location.getTime();
-                        mTotDangerTime += ((endTime - startTime)/ONE_SEC);
+                        mTotDangerTime += ((endTime - startTime) / ONE_SEC) * 100;
                         isFirstTimeAboveLimit = true;
                     }
                     friendlyCounter = 0;
@@ -233,7 +231,7 @@ public class GPSService extends Service {
                     // above 40 KM/H and screen is off, SAFE
                     if(!isFirstTimeAboveLimit){
                         endTime = location.getTime();
-                        mTotDangerTime += ((endTime - startTime)/ONE_SEC);
+                        mTotDangerTime += ((endTime - startTime) / ONE_SEC) * 100;
                         isFirstTimeAboveLimit = true;
                     }
                     friendlyCounter = 0;
@@ -271,7 +269,7 @@ public class GPSService extends Service {
                                                 //i.e. not already below,
                                                 //i.e. ended a dangerous driving interval
                         endTime = location.getTime();
-                        mTotDangerTime += ((endTime - startTime)/ONE_SEC); // save total time in seconds
+                        mTotDangerTime += ((endTime - startTime) / ONE_SEC) * 100; // save total time in seconds
                         isFirstTimeAboveLimit = true; // reset boolean so we can calculate if driver passes speed limit again
                     }
                     friendlyCounter = 0;
