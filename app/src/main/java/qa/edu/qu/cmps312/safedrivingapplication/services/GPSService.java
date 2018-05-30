@@ -38,6 +38,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import qa.edu.qu.cmps312.safedrivingapplication.R;
 import qa.edu.qu.cmps312.safedrivingapplication.activities.MainActivity;
+import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
 import qa.edu.qu.cmps312.safedrivingapplication.models.Trip;
 import qa.edu.qu.cmps312.safedrivingapplication.models.User;
 
@@ -210,7 +211,7 @@ public class GPSService extends Service {
                     // above 60 KM/H and screen is off, SAFE
                     if(!isFirstTimeAboveLimit){
                         endTime = location.getTime();
-                        mTotDangerTime += ((endTime - startTime) / ONE_SEC) * 100;
+                        mTotDangerTime += (endTime - startTime);
                         isFirstTimeAboveLimit = true;
                     }
                     friendlyCounter = 0;
@@ -231,7 +232,7 @@ public class GPSService extends Service {
                     // above 40 KM/H and screen is off, SAFE
                     if(!isFirstTimeAboveLimit){
                         endTime = location.getTime();
-                        mTotDangerTime += ((endTime - startTime) / ONE_SEC) * 100;
+                        mTotDangerTime += (endTime - startTime);
                         isFirstTimeAboveLimit = true;
                     }
                     friendlyCounter = 0;
@@ -269,7 +270,7 @@ public class GPSService extends Service {
                                                 //i.e. not already below,
                                                 //i.e. ended a dangerous driving interval
                         endTime = location.getTime();
-                        mTotDangerTime += ((endTime - startTime) / ONE_SEC) * 100; // save total time in seconds
+                        mTotDangerTime += (endTime - startTime); // save total time in milli seconds
                         isFirstTimeAboveLimit = true; // reset boolean so we can calculate if driver passes speed limit again
                     }
                     friendlyCounter = 0;
@@ -407,7 +408,7 @@ public class GPSService extends Service {
     }
 
     public float getTotDangerTimeInMin() {
-        return mTotDangerTime /ONE_MIN;
+        return  mTotDangerTime /ONE_MIN;
     }
 
     public float getTotTripTimeInMin() {
@@ -448,6 +449,7 @@ public class GPSService extends Service {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Trip trip;
+                    float mileage;
                     String currentUserKey = sharedPreferences.getString("key", "-1");
                     if (dataSnapshot.child(currentUserKey).getValue(User.class).getTrip() == null) { // first trip
                         trip = new Trip(getTotTripTimeInMin(), getTotDangerTimeInMin(), getMileage(), getTripAvgSpeed());
@@ -466,6 +468,11 @@ public class GPSService extends Service {
                         avgSpeed += getTripAvgSpeed();
                         trip = new Trip(totTime, totDangerTime, totDistance, avgSpeed);
                         trip.setNoOfTrips(noOfTrips);
+                    }
+                    if(dataSnapshot.child(currentUserKey).getValue(User.class).getUserCar() != null){ // user has a car registered
+                        mileage = dataSnapshot.child(currentUserKey).getValue(User.class).getUserCar().getMilage();
+                        mileage += getMileage();
+                        myRef.child(currentUserKey).child("userCar").child("milage").setValue(mileage);
                     }
                     // save the new trip
                     myRef.child(currentUserKey).child("trip").setValue(trip);
@@ -490,6 +497,13 @@ public class GPSService extends Service {
         else
             Toast.makeText(getApplicationContext(), "Trip is too short to save", Toast.LENGTH_LONG).show();
 
+    }
+
+    public void addMileage(){
+        // obtain a reference to current user car
+
+        // get trip mileage
+        // add mileage to car mileage
     }
 
     @Override
