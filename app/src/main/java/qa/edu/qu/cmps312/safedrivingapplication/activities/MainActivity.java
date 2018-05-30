@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     static final int PERMISSIONS_REQUEST_CODE = 22;
     public static Location mStartingLocation;
     public static int mCurrentFragmentIndex; // 0: Login, 1: MainScreen, 2: Register, 3: Map, 4: AddCar, 5:ManageCar, 6: Statistics
+    public static ArrayList<LatLng> mDriversPositions;
+    public static ArrayList<String> mDriversFullNames;
     LoginFragment loginFragment;
     ArrayList<Car> tempList;
     DatabaseReference mDatabase;
@@ -74,8 +76,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
     String mBossKey;
     ArrayList<String> mBossContacts;
     ArrayList<String> mBossName;
-    public static ArrayList<LatLng> mDriversPositions;
-    public static ArrayList<String> mDriversFullNames;
     FusedLocationProviderClient mFusedLocationProviderClient;
     LocationRequest mLocationRequest;
     ServiceConnection mConnection = new ServiceConnection() {
@@ -203,8 +203,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Suc
                                     e.putString("username", ds.getValue(User.class).getUserName());
                                     e.putString("type", ds.getValue(User.class).getType());
                                     e.putString("key", ds.getKey());
-                                    if (ds.getValue(User.class).getUserCar() != null)
+                                    if (ds.getValue(User.class).getUserCar() != null) {
                                         e.putInt("mileage", ds.getValue(User.class).getUserCar().getMilage());
+                                        e.putString("make", ds.getValue(User.class).getUserCar().getMake());
+                                        e.putString("model", ds.getValue(User.class).getUserCar().getModel());
+                                        e.putString("year", ds.getValue(User.class).getUserCar().getYear());
+                                    }
                                     if (ds.getValue(User.class).getTrip() != null)
                                         e.putBoolean("hasTrip", true);
                                     else

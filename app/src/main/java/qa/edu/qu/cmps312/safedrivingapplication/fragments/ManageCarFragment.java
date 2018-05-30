@@ -2,6 +2,7 @@ package qa.edu.qu.cmps312.safedrivingapplication.fragments;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,7 +13,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+
 import qa.edu.qu.cmps312.safedrivingapplication.R;
+import qa.edu.qu.cmps312.safedrivingapplication.models.Car;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by mohdf on 5/8/2018.
@@ -22,7 +28,11 @@ public class ManageCarFragment extends Fragment{
 
     ManageCarInterface manageCarInterface;
 
+    DatabaseReference mDatabase;
+    SharedPreferences sharedPreferences;
+
     EditText make, model, year, milage;
+    Car userCar;
     Button clearFieldsBtn, submitBtn, cancelBtn;
 
     public ManageCarFragment(){
@@ -34,14 +44,30 @@ public class ManageCarFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.manage_car_fragment_layout, container, false);
 
+        sharedPreferences = getContext().getSharedPreferences("MySharedPrefs", MODE_PRIVATE);
+
+
         make = rootView.findViewById(R.id.mCarMake);
         model = rootView.findViewById(R.id.mModel);
         year = rootView.findViewById(R.id.mYear);
         milage = rootView.findViewById(R.id.mMileage);
 
+
+        milage.setText(sharedPreferences.getInt("mileage", 0) + "");
+        make.setText(sharedPreferences.getString("make", ""));
+        year.setText(sharedPreferences.getString("year", ""));
+        model.setText(sharedPreferences.getString("model", ""));
+        if (userCar != null) {
+            make.setText(userCar.getMake() + "");
+            model.setText(userCar.getModel() + "");
+            year.setText(userCar.getYear() + "");
+            milage.setText(userCar.getMilage() + "");
+        }
+
         clearFieldsBtn = rootView.findViewById(R.id.mClearFields);
         submitBtn = rootView.findViewById(R.id.mSubmitButton);
         cancelBtn = rootView.findViewById(R.id.mCanecelButton);
+
 
         clearFieldsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
